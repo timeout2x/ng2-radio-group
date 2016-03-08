@@ -11,26 +11,26 @@ Does not depend of jquery.
 
 There are two components.
 
-First is a checkboxes group and allows you to select multiple options for a single model.
-
-```html
-<radio-group [(model)]="sortBy">
-    <radio-item value="rating"><a class="left8">Rating</a></radio-item>
-    <radio-item value="date"><a class="left8">Date</a></radio-item>
-    <radio-item value="watches"><a class="left8">Watch count</a></radio-item>
-    <radio-item value="comments"><a class="left8">Comment count</a></radio-item>
-</radio-group>
-```
-
-Second is a radio inputs group and allows you to select single option for a single model.
+First is a checkboxes group that allows you to select multiple options for a single model.
 
 ```html
 <checkbox-group [(model)]="orderBy">
-    <checkbox-item value="rating"><a class="left8">Rating</a></checkbox-item>
-    <checkbox-item value="date"><a class="left8">Date</a></checkbox-item>
-    <checkboxio-item value="watches"><a class="left8">Watch count</a></checkboxio-item>
-    <checkbox-item value="comments"><a class="left8">Comment count</a></checkbox-item>
+    <checkbox-item value="rating">Rating</checkbox-item>
+    <checkbox-item value="date">Date</checkbox-item>
+    <checkbox-item value="watches">Watch count</checkbox-item>
+    <checkbox-item value="comments">Comment count</checkbox-item>
 </checkbox-group>
+```
+
+Second is a radio inputs group that allows you to select single option for a single model.
+
+```html
+<radio-group [(model)]="sortBy">
+    <radio-item value="rating">Rating</radio-item>
+    <radio-item value="date">Date</radio-item>
+    <radio-item value="watches">Watch count</radio-item>
+    <radio-item value="comments">Comment count</radio-item>
+</radio-group>
 ```
 
 ## Sample
