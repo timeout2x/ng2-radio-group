@@ -12,7 +12,7 @@ Does not depend of jquery.
 If you need a simple checkbox for your variable:
 
 ```html
-<input check-box [(model)]="rememberMe" [value]="true" [uncheckedValue]="false"> enabled?<br/>
+<input check-box [(model)]="rememberMe" [value]="true" [uncheckedValue]="false"> remember me?<br/>
 ```
 
 * `model` is a model you are trying to change (rememberMe is a boolean variable in your component)
