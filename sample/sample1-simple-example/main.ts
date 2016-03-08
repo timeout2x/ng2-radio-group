@@ -6,15 +6,62 @@ import {RADIO_GROUP_DIRECTIVES} from "../../src/ng2-radio-group";
     selector: "app",
     template: `
 <div class="container">
-    <b>Sort by:</b>
+
+    <h4>Is something enabled: (non-multiple checkbox)</h4>
+    <input check-box [(model)]="isSomethingEnabled" [value]="true" [uncheckedValue]="false"> enabled?<br/>
+    <i>isSomethingEnabled value:</i> <b>{{ isSomethingEnabled }}</b><br/><br/>
+
+    <h4>Order by: (multiple check boxes)</h4>
+    <input check-box [(model)]="orderBy" value="rating"> Rating<br/>
+    <input check-box [(model)]="orderBy" value="date"> Date<br/>
+    <input check-box [(model)]="orderBy" value="watches"> Watch count<br/>
+    <input check-box [(model)]="orderBy" value="comments"> Comment count<br/>
+    
+    <i>selected items:</i> <b><span *ngFor="#order of orderBy">{{ order }} </span></b><br/><br/>
+
+    <h4>Sort by: (simple radio boxes)</h4>
+    <input radio-box [(model)]="sortBy" value="rating"> Rating<br/>
+    <input radio-box [(model)]="sortBy" value="date"> Date<br/>
+    <input radio-box [(model)]="sortBy" value="watches"> Watch count<br/>
+    <input radio-box [(model)]="sortBy" value="comments"> Comment count<br/>
+    
+    <i>selected item:</i> <b>{{ sortWithoutGroup }}</b><br/><br/>
+
+
+    <h4>Sort by: (radio boxes wrapped in the group)</h4>
+    <radio-group [(model)]="sortBy">
+        <input radio-box value="rating"> Rating<br/>
+        <input radio-box value="date"> Date<br/>
+        <input radio-box value="watches"> Watch count<br/>
+        <input radio-box value="comments"> Comment count<br/>
+    </radio-group>
+    
+    <i>selected item:</i> <b>{{ sortBy }}</b><br/><br/>
+
+
+    <h4>Order by: (radio boxes wrapped in the group)</h4>
+    <checkbox-group [(model)]="orderBy">
+        <input check-box value="rating"> Rating<br/>
+        <input check-box value="date"> Date<br/>
+        <input check-box value="watches"> Watch count<br/>
+        <input check-box value="comments"> Comment count<br/>
+    </checkbox-group>
+    
+    <i>selected items:</i> <b><span *ngFor="#order of orderBy">{{ order }} </span></b><br/><br/>
+    
+    
+    <h4>Sort by: (check boxes in group, less flexible, but simpler and the whole component is clickable)</h4>
     <radio-group [(model)]="sortBy">
         <radio-item value="rating">Rating</radio-item>
         <radio-item value="date">Date</radio-item>
         <radio-item value="watches">Watch count</radio-item>
         <radio-item value="comments">Comment count</radio-item>
     </radio-group>
+    
+    <i>selected item:</i> <b>{{ sortBy }}</b><br/><br/>
 
-    <b>Order by:</b>
+
+    <h4>Order by: (radio boxes in group, less flexible, but simpler and the whole component is clickable)</h4>
     <checkbox-group [(model)]="orderBy">
         <checkbox-item value="rating">Rating</checkbox-item>
         <checkbox-item value="date">Date</checkbox-item>
@@ -22,17 +69,18 @@ import {RADIO_GROUP_DIRECTIVES} from "../../src/ng2-radio-group";
         <checkbox-item value="comments">Comment count</checkbox-item>
     </checkbox-group>
     
-    <br/>
-    Selected sorting types: {{ sortBy }}<br/>
-    Selected order types: <span *ngFor="#order of orderBy">{{ order }} </span><br/>
+    <i>selected items:</i> <b><span *ngFor="#order of orderBy">{{ order }} </span></b><br/><br/>
+    
+    
 </div>
 `,
     directives: [RADIO_GROUP_DIRECTIVES]
 })
 export class Sample1App {
 
+    isSomethingEnabled: boolean = false;
     sortBy: string = "date";
-    orderBy: string[] = ["watches", "comments"];
+    orderBy: string[] = ["rating", "comments"];
 
 }
 

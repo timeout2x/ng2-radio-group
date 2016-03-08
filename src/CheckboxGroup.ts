@@ -1,4 +1,7 @@
-import {Component, Input, Output, EventEmitter, Host} from "angular2/core";
+import {
+    Component, Input, Output, EventEmitter, Host, Directive, HostBinding, ElementRef,
+    Optional, HostListener
+} from "angular2/core";
 
 @Component({
     selector: "checkbox-group",
@@ -22,7 +25,11 @@ export class CheckboxGroup {
     }
 
     hasValue(value: any) {
-        return this.model && this.model.indexOf(value) !== -1;
+        if (this.model instanceof Array) {
+            return this.model.indexOf(value) !== -1;
+        } else {
+            return this.model === value;
+        }
     }
 
 }
@@ -49,4 +56,68 @@ export class CheckboxItem {
     isChecked() {
         return this.checkboxGroup.hasValue(this.value);
     }
+}
+
+@Directive({
+    selector: "[check-box]"
+})
+export class CheckBox {
+
+    @HostBinding("type")
+    type = "checkbox";
+
+    @Output()
+    modelChange = new EventEmitter();
+
+    @Input()
+    model: any;
+
+    @Input()
+    value: any;
+
+    @Input()
+    uncheckedValue: any = null;
+
+    constructor(@Optional() @Host() private checkboxGroup: CheckboxGroup) {
+    }
+
+    @HostBinding("checked")
+    get checked() {
+        return this.checkboxGroup ? this.checkboxGroup.hasValue(this.value) : this.hasModelValue();
+    }
+
+    @HostListener("click")
+    check() {
+        if (this.checkboxGroup) {
+            this.checkboxGroup.addOrRemoveValue(this.value);
+        } else {
+            this.addOrRemoveValue();
+        }
+    }
+
+    private hasModelValue() {
+        if (this.model instanceof Array) {
+            return this.model.indexOf(this.value) !== -1;
+        } else {
+            return this.model === this.value;
+        }
+    }
+
+    private addOrRemoveValue() {
+        if (this.model instanceof Array) {
+            if (this.hasModelValue()) {
+                this.model.splice(this.model.indexOf(this.value), 1);
+            } else {
+                this.model.push(this.value);
+            }
+        } else {
+            if (this.model === this.value) {
+                this.model = this.uncheckedValue;
+            } else {
+                this.model = this.value;
+            }
+        }
+        this.modelChange.emit(this.model);
+    }
+
 }

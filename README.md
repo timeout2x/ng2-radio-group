@@ -9,28 +9,54 @@ Does not depend of jquery.
 
 ## Usage
 
-There are two components.
-
-First is a checkboxes group that allows you to select multiple options for a single model.
+If you need a simple checkbox for your variable:
 
 ```html
-<checkbox-group [(model)]="orderBy">
-    <checkbox-item value="rating">Rating</checkbox-item>
-    <checkbox-item value="date">Date</checkbox-item>
-    <checkbox-item value="watches">Watch count</checkbox-item>
-    <checkbox-item value="comments">Comment count</checkbox-item>
-</checkbox-group>
+<input check-box [(model)]="rememberMe" [value]="true" [uncheckedValue]="false"> enabled?<br/>
 ```
 
-Second is a radio inputs group that allows you to select single option for a single model.
+* `model` is a model you are trying to change (rememberMe is a boolean variable in your component)
+* `value` is a value that should be written to the model when checkbox is checked
+* `uncheckedValue` is a value that should be written to the model when checkbox is unchecked.
+Optional, by default this value in equal to *null*
+
+If your model is an array and you want to push multiple items into it, you can use it with this component:
+
+```html
+<input check-box [(model)]="orderBy" value="rating"> Rating<br/>
+<input check-box [(model)]="orderBy" value="date"> Date<br/>
+<input check-box [(model)]="orderBy" value="watches"> Watch count<br/>
+<input check-box [(model)]="orderBy" value="comments"> Comment count<br/>
+```
+
+Don't forget to initialize your `orderBy` array.
+
+
+If you need to select only one item from the multiple options, you need a radio boxes:
+
+```html
+<input radio-box [(model)]="sortBy" value="rating"> Rating<br/>
+<input radio-box [(model)]="sortBy" value="date"> Date<br/>
+<input radio-box [(model)]="sortBy" value="watches"> Watch count<br/>
+<input radio-box [(model)]="sortBy" value="comments"> Comment count<br/>
+```
+
+To simplify this selection you can use checkbox and radio groups:
 
 ```html
 <radio-group [(model)]="sortBy">
-    <radio-item value="rating">Rating</radio-item>
-    <radio-item value="date">Date</radio-item>
-    <radio-item value="watches">Watch count</radio-item>
-    <radio-item value="comments">Comment count</radio-item>
+    <input radio-box value="rating"> Rating<br/>
+    <input radio-box value="date"> Date<br/>
+    <input radio-box value="watches"> Watch count<br/>
+    <input radio-box value="comments"> Comment count<br/>
 </radio-group>
+
+<checkbox-group [(model)]="orderBy">
+    <input check-box value="rating"> Rating<br/>
+    <input check-box value="date"> Date<br/>
+    <input check-box value="watches"> Watch count<br/>
+    <input check-box value="comments"> Comment count<br/>
+</checkbox-group>
 ```
 
 ## Sample
@@ -44,32 +70,56 @@ import {RADIO_GROUP_DIRECTIVES} from "ng2-radio-group/ng2-radio-group";
 @Component({
     selector: "app",
     template: `
-    <b>Sort by:</b>
+
+    <h4>Is something enabled: (non-multiple checkbox)</h4>
+    <input check-box [(model)]="rememberMe" [value]="true" [uncheckedValue]="false"> remember me?<br/>
+    <i>rememberMe value:</i> <b>{{ rememberMe }}</b><br/><br/>
+
+    <h4>Order by: (multiple check boxes)</h4>
+    <input check-box [(model)]="orderBy" value="rating"> Rating<br/>
+    <input check-box [(model)]="orderBy" value="date"> Date<br/>
+    <input check-box [(model)]="orderBy" value="watches"> Watch count<br/>
+    <input check-box [(model)]="orderBy" value="comments"> Comment count<br/>
+
+    <i>selected items:</i> <b><span *ngFor="#order of orderBy">{{ order }} </span></b><br/><br/>
+
+    <h4>Sort by: (simple radio boxes)</h4>
+    <input radio-box [(model)]="sortBy" value="rating"> Rating<br/>
+    <input radio-box [(model)]="sortBy" value="date"> Date<br/>
+    <input radio-box [(model)]="sortBy" value="watches"> Watch count<br/>
+    <input radio-box [(model)]="sortBy" value="comments"> Comment count<br/>
+
+    <i>selected item:</i> <b>{{ sortWithoutGroup }}</b><br/><br/>
+
+
+    <h4>Sort by: (radio boxes wrapped in the group)</h4>
     <radio-group [(model)]="sortBy">
-        <radio-item value="rating">Rating</radio-item>
-        <radio-item value="date">Date</radio-item>
-        <radio-item value="watches">Watch count</radio-item>
-        <radio-item value="comments">Comment count</radio-item>
+        <input radio-box value="rating"> Rating<br/>
+        <input radio-box value="date"> Date<br/>
+        <input radio-box value="watches"> Watch count<br/>
+        <input radio-box value="comments"> Comment count<br/>
     </radio-group>
 
-    <b>Order by:</b>
+    <i>selected item:</i> <b>{{ sortBy }}</b><br/><br/>
+
+
+    <h4>Order by: (radio boxes wrapped in the group)</h4>
     <checkbox-group [(model)]="orderBy">
-        <checkbox-item value="rating">Rating</checkbox-item>
-        <checkbox-item value="date">Date</checkbox-item>
-        <checkbox-item value="watches">Watch count</checkbox-item>
-        <checkbox-item value="comments">Comment count</checkbox-item>
+        <input check-box value="rating"> Rating<br/>
+        <input check-box value="date"> Date<br/>
+        <input check-box value="watches"> Watch count<br/>
+        <input check-box value="comments"> Comment count<br/>
     </checkbox-group>
 
-    <br/>
-    Selected sorting types: {{ sortBy }}<br/>
-    Selected order types: <span *ngFor="#order of orderBy">{{ order }} </span><br/>
+    <i>selected items:</i> <b><span *ngFor="#order of orderBy">{{ order }} </span></b><br/><br/>
     `,
     directives: [RADIO_GROUP_DIRECTIVES]
 })
 export class App {
 
+    rememberMe: boolean = false;
     sortBy: string = "date";
-    orderBy: string[] = ["watches", "comments"];
+    orderBy: string[] = ["rating", "comments"];
 
 }
 ```

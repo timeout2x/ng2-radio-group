@@ -1,6 +1,6 @@
 {
   "name": "ng2-radio-group",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Checkbox group and radio group control for your angular2 applications using bootstrap3.",
   "license": "Apache-2.0",
   "readmeFilename": "README.md",
