@@ -5,7 +5,22 @@ Does not depend of jquery.
 
 ## Installation
 
+1. Install npm module:
+
 `npm install ng2-radio-group --save`
+
+2. If you are using system.js you may want to add this into `map` and `package` config:
+
+```json
+{
+    "map": {
+        "ng2-radio-group": "node_modules/ng2-radio-group"
+    },
+    "packages": {
+        "ng2-radio-group": { "main": "index.js", "defaultExtension": "js" }
+    }
+}
+```
 
 ## Usage
 
@@ -64,8 +79,8 @@ To simplify this selection you can use checkbox and radio groups:
 Complete example of usage:
 
 ```typescript
-import {Component} from "angular2/core";
-import {RADIO_GROUP_DIRECTIVES} from "ng2-radio-group/ng2-radio-group";
+import {Component} from "@angular/core";
+import {RADIO_GROUP_DIRECTIVES} from "ng2-radio-group";
 
 @Component({
     selector: "app",
@@ -81,7 +96,7 @@ import {RADIO_GROUP_DIRECTIVES} from "ng2-radio-group/ng2-radio-group";
     <input check-box [(model)]="orderBy" value="watches"> Watch count<br/>
     <input check-box [(model)]="orderBy" value="comments"> Comment count<br/>
 
-    <i>selected items:</i> <b><span *ngFor="#order of orderBy">{{ order }} </span></b><br/><br/>
+    <i>selected items:</i> <b><span *ngFor="let order of orderBy">{{ order }} </span></b><br/><br/>
 
     <h4>Sort by: (simple radio boxes)</h4>
     <input radio-box [(model)]="sortBy" value="rating"> Rating<br/>
@@ -111,7 +126,7 @@ import {RADIO_GROUP_DIRECTIVES} from "ng2-radio-group/ng2-radio-group";
         <input check-box value="comments"> Comment count<br/>
     </checkbox-group>
 
-    <i>selected items:</i> <b><span *ngFor="#order of orderBy">{{ order }} </span></b><br/><br/>
+    <i>selected items:</i> <b><span *ngFor="let order of orderBy">{{ order }} </span></b><br/><br/>
     `,
     directives: [RADIO_GROUP_DIRECTIVES]
 })

@@ -1,7 +1,7 @@
 import {
     Component, Input, Output, EventEmitter, Host, Directive, HostBinding, ElementRef,
     Optional, HostListener
-} from "angular2/core";
+} from "@angular/core";
 
 @Component({
     selector: "checkbox-group",

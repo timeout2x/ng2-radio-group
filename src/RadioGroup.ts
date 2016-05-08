@@ -1,7 +1,7 @@
 import {
     Component, Input, Output, EventEmitter, Host, Directive, ElementRef, HostBinding,
     HostListener, Optional, OnInit
-} from "angular2/core";
+} from "@angular/core";
 
 @Component({
     selector: "radio-group",

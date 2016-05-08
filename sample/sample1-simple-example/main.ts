@@ -1,6 +1,6 @@
-import {bootstrap} from "angular2/platform/browser";
-import {Component} from "angular2/core";
-import {RADIO_GROUP_DIRECTIVES} from "../../src/ng2-radio-group";
+import {bootstrap} from "@angular/platform-browser-dynamic";
+import {Component} from "@angular/core";
+import {RADIO_GROUP_DIRECTIVES} from "../../src/index";
 
 @Component({
     selector: "app",
@@ -17,13 +17,13 @@ import {RADIO_GROUP_DIRECTIVES} from "../../src/ng2-radio-group";
     <input check-box [(model)]="orderBy" value="watches"> Watch count<br/>
     <input check-box [(model)]="orderBy" value="comments"> Comment count<br/>
     
-    <i>selected items:</i> <b><span *ngFor="#order of orderBy">{{ order }} </span></b><br/><br/>
+    <i>selected items:</i> <b><span *ngFor="let order of orderBy">{{ order }} </span></b><br/><br/>
 
     <h4>Sort by: (simple radio boxes)</h4>
-    <input radio-box [(model)]="sortBy" value="rating"> Rating<br/>
-    <input radio-box [(model)]="sortBy" value="date"> Date<br/>
-    <input radio-box [(model)]="sortBy" value="watches"> Watch count<br/>
-    <input radio-box [(model)]="sortBy" value="comments"> Comment count<br/>
+    <input radio-box [(model)]="sortWithoutGroup" value="rating"> Rating<br/>
+    <input radio-box [(model)]="sortWithoutGroup" value="date"> Date<br/>
+    <input radio-box [(model)]="sortWithoutGroup" value="watches"> Watch count<br/>
+    <input radio-box [(model)]="sortWithoutGroup" value="comments"> Comment count<br/>
     
     <i>selected item:</i> <b>{{ sortWithoutGroup }}</b><br/><br/>
 
@@ -47,7 +47,7 @@ import {RADIO_GROUP_DIRECTIVES} from "../../src/ng2-radio-group";
         <input check-box value="comments"> Comment count<br/>
     </checkbox-group>
     
-    <i>selected items:</i> <b><span *ngFor="#order of orderBy">{{ order }} </span></b><br/><br/>
+    <i>selected items:</i> <b><span *ngFor="let order of orderBy">{{ order }} </span></b><br/><br/>
     
     
     <h4>Sort by: (check boxes in group, less flexible, but simpler and the whole component is clickable)</h4>
@@ -69,7 +69,7 @@ import {RADIO_GROUP_DIRECTIVES} from "../../src/ng2-radio-group";
         <checkbox-item value="comments">Comment count</checkbox-item>
     </checkbox-group>
     
-    <i>selected items:</i> <b><span *ngFor="#order of orderBy">{{ order }} </span></b><br/><br/>
+    <i>selected items:</i> <b><span *ngFor="let order of orderBy">{{ order }} </span></b><br/><br/>
     
     
 </div>
