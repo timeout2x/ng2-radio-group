@@ -10,20 +10,20 @@ Please star a project if you liked it, or create an issue if you have problems w
 
 1. Install npm module:
 
-`npm install ng2-radio-group --save`
+    `npm install ng2-radio-group --save`
 
 2. If you are using system.js you may want to add this into `map` and `package` config:
 
-```json
-{
-    "map": {
-        "ng2-radio-group": "node_modules/ng2-radio-group"
-    },
-    "packages": {
-        "ng2-radio-group": { "main": "index.js", "defaultExtension": "js" }
+    ```json
+    {
+        "map": {
+            "ng2-radio-group": "node_modules/ng2-radio-group"
+        },
+        "packages": {
+            "ng2-radio-group": { "main": "index.js", "defaultExtension": "js" }
+        }
     }
-}
-```
+    ```
 
 ## Usage
 
