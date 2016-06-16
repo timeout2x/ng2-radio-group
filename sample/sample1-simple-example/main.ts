@@ -86,7 +86,9 @@ import {RADIO_GROUP_DIRECTIVES} from "../../src/index";
         <div [hidden]="sortByRadioGroup.valid || sortByRadioGroup.pristine" class="alert alert-danger">
             Sort by is required
         </div>
-        <br/>
+    
+        <i>selected item:</i> <b>{{ sortBy }}</b><br/><br/>
+        
         <checkbox-group ngControl="orderByControl" #orderByCheckboxGroup="ngForm" [(ngModel)]="orderBy" [required]="true">
             <checkbox-item value="rating">Rating</checkbox-item>
             <checkbox-item value="date">Date</checkbox-item>
@@ -96,6 +98,8 @@ import {RADIO_GROUP_DIRECTIVES} from "../../src/index";
         <div [hidden]="orderByCheckboxGroup.valid || orderByCheckboxGroup.pristine" class="alert alert-danger">
             Order by is required
         </div>
+    
+        <i>selected items:</i> <b><span *ngFor="let order of orderBy">{{ order }} </span></b><br/><br/>
     </form>
     
 </div>
