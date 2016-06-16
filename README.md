@@ -220,5 +220,5 @@ usages.
 
 * `[(model)]` now should be `[(ngModel)]`
 * component now can be used with forms and validation can be applied (like `required`)
-* `check-box` and `type="radio"` has been removed since starting from angular2.rc1 `[(ngModel)]` works with
-input="checkbox" and input="radio" out of the box
+* `check-box` and `radio-box` has been removed, now you simply need to make your input as checkbox or radio:
+`<input type="checkbox">` or `<input type="radio">`
