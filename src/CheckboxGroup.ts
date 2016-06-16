@@ -1,19 +1,69 @@
-import {
-    Component, Input, Output, EventEmitter, Host, Directive, HostBinding, ElementRef,
-    Optional, HostListener
-} from "@angular/core";
+import {Component, Input, Host, Directive, HostBinding, Optional, HostListener, Provider, forwardRef} from "@angular/core";
+import {NG_VALUE_ACCESSOR, NG_VALIDATORS, Validator, ControlValueAccessor, Control} from "@angular/common";
 
 @Component({
     selector: "checkbox-group",
-    template: `<div class="checkbox-group"><ng-content></ng-content></div>`
+    template: `<div class="checkbox-group"><ng-content></ng-content></div>`,
+    providers: [
+        new Provider(NG_VALUE_ACCESSOR, {
+            useExisting: forwardRef(() => CheckboxGroup),
+            multi: true
+        }),
+        new Provider(NG_VALIDATORS, {
+            useExisting: forwardRef(() => CheckboxGroup),
+            multi: true
+        })
+    ]
 })
-export class CheckboxGroup {
+export class CheckboxGroup implements ControlValueAccessor, Validator {
 
-    @Output()
-    modelChange = new EventEmitter();
+    // -------------------------------------------------------------------------
+    // Inputs
+    // -------------------------------------------------------------------------
 
     @Input()
-    model: any[];
+    required: boolean = false;
+    
+    // -------------------------------------------------------------------------
+    // Private Properties
+    // -------------------------------------------------------------------------
+
+    private model: any[];
+    private onChange: (m: any) => void;
+    private onTouched: (m: any) => void;
+
+    // -------------------------------------------------------------------------
+    // Implemented from ControlValueAccessor
+    // -------------------------------------------------------------------------
+
+    writeValue(value: any[]): void {
+        this.model = value;
+    }
+
+    registerOnChange(fn: any): void {
+        this.onChange = fn;
+    }
+
+    registerOnTouched(fn: any): void {
+        this.onTouched = fn;
+    }
+
+    // -------------------------------------------------------------------------
+    // Implemented from Validator
+    // -------------------------------------------------------------------------
+
+    validate(c: Control) {
+        if (this.required && (!c.value || (c.value instanceof Array) && c.value.length === 0)) {
+            return {
+                required: true
+            };
+        }
+        return null;
+    }
+
+    // -------------------------------------------------------------------------
+    // Public Methods
+    // -------------------------------------------------------------------------
 
     addOrRemoveValue(value: any) {
         if (this.hasValue(value)) {
@@ -21,7 +71,7 @@ export class CheckboxGroup {
         } else {
             this.model.push(value);
         }
-        this.modelChange.emit(this.model);
+        this.onChange(this.model);
     }
 
     hasValue(value: any) {
@@ -38,8 +88,13 @@ export class CheckboxGroup {
     selector: "checkbox-item",
     template: `
 <div class="checkbox-item" (click)="check()">
-    <input type="checkbox" [checked]="isChecked()"/> <ng-content></ng-content>
-</div>`
+    <input class="checkbox-item-input" type="checkbox" [checked]="isChecked()"/> <ng-content></ng-content>
+</div>`,
+    styles: [`
+.checkbox-item {
+    cursor: pointer;
+}
+`]
 })
 export class CheckboxItem {
 
@@ -56,30 +111,55 @@ export class CheckboxItem {
     isChecked() {
         return this.checkboxGroup.hasValue(this.value);
     }
+
 }
 
 @Directive({
-    selector: "[check-box]"
+    selector: "input[type=checkbox]",
+    providers: [
+        new Provider(NG_VALUE_ACCESSOR, {
+            useExisting: forwardRef(() => CheckBox),
+            multi: true
+        }),
+        new Provider(NG_VALIDATORS, {
+            useExisting: forwardRef(() => CheckBox),
+            multi: true
+        })
+    ],
 })
-export class CheckBox {
+export class CheckBox implements ControlValueAccessor, Validator {
 
-    @HostBinding("type")
-    type = "checkbox";
-
-    @Output()
-    modelChange = new EventEmitter();
+    // -------------------------------------------------------------------------
+    // Inputs
+    // -------------------------------------------------------------------------
 
     @Input()
-    model: any;
+    value: any = true;
 
     @Input()
-    value: any;
+    uncheckedValue: any = false;
 
     @Input()
-    uncheckedValue: any = null;
+    required: boolean = false;
+
+    // -------------------------------------------------------------------------
+    // Private Properties
+    // -------------------------------------------------------------------------
+
+    private model: any;
+    private onChange: (m: any) => void;
+    private onTouched: (m: any) => void;
+
+    // -------------------------------------------------------------------------
+    // Constructor
+    // -------------------------------------------------------------------------
 
     constructor(@Optional() @Host() private checkboxGroup: CheckboxGroup) {
     }
+
+    // -------------------------------------------------------------------------
+    // Bindings
+    // -------------------------------------------------------------------------
 
     @HostBinding("checked")
     get checked() {
@@ -94,6 +174,39 @@ export class CheckBox {
             this.addOrRemoveValue();
         }
     }
+
+    // -------------------------------------------------------------------------
+    // Implemented from ControlValueAccessor
+    // -------------------------------------------------------------------------
+
+    writeValue(value: any): void {
+        this.model = value;
+    }
+
+    registerOnChange(fn: any): void {
+        this.onChange = fn;
+    }
+
+    registerOnTouched(fn: any): void {
+        this.onTouched = fn;
+    }
+
+    // -------------------------------------------------------------------------
+    // Implemented from Validator
+    // -------------------------------------------------------------------------
+
+    validate(c: Control) {
+        if (this.required && (!c.value || (c.value instanceof Array) && c.value.length === 0)) {
+            return {
+                required: true
+            };
+        }
+        return null;
+    }
+
+    // -------------------------------------------------------------------------
+    // Private Methods
+    // -------------------------------------------------------------------------
 
     private hasModelValue() {
         if (this.model instanceof Array) {
@@ -117,7 +230,7 @@ export class CheckBox {
                 this.model = this.value;
             }
         }
-        this.modelChange.emit(this.model);
+        this.onChange(this.model);
     }
 
 }

@@ -1,23 +1,89 @@
 import {
-    Component, Input, Output, EventEmitter, Host, Directive, ElementRef, HostBinding,
-    HostListener, Optional, OnInit
+    Component,
+    Input,
+    Host,
+    Directive,
+    ElementRef,
+    HostBinding,
+    HostListener,
+    Optional,
+    Provider,
+    forwardRef
 } from "@angular/core";
+import {Validator, ControlValueAccessor, NG_VALUE_ACCESSOR, NG_VALIDATORS, Control} from "@angular/common";
 
 @Component({
     selector: "radio-group",
-    template: `<div class="radio-group"><ng-content></ng-content></div>`
+    template: `<div class="radio-group"><ng-content></ng-content></div>`,
+    providers: [
+        new Provider(NG_VALUE_ACCESSOR, {
+            useExisting: forwardRef(() => RadioGroup),
+            multi: true
+        }),
+        new Provider(NG_VALIDATORS, {
+            useExisting: forwardRef(() => RadioGroup),
+            multi: true
+        })
+    ]
 })
 export class RadioGroup {
 
-    @Output()
-    modelChange = new EventEmitter();
+    // -------------------------------------------------------------------------
+    // Inputs
+    // -------------------------------------------------------------------------
 
     @Input()
+    required: boolean = false;
+
+    // -------------------------------------------------------------------------
+    // Public Properties
+    // -------------------------------------------------------------------------
+
     model: any;
+
+    // -------------------------------------------------------------------------
+    // Private Properties
+    // -------------------------------------------------------------------------
+
+    private onChange: (m: any) => void;
+    private onTouched: (m: any) => void;
+
+    // -------------------------------------------------------------------------
+    // Implemented from ControlValueAccessor
+    // -------------------------------------------------------------------------
+
+    writeValue(value: any): void {
+        this.model = value;
+    }
+
+    registerOnChange(fn: any): void {
+        this.onChange = fn;
+    }
+
+    registerOnTouched(fn: any): void {
+        this.onTouched = fn;
+    }
+
+    // -------------------------------------------------------------------------
+    // Implemented from Validator
+    // -------------------------------------------------------------------------
+
+    validate(c: Control) {
+        if (this.required && (!c.value || (c.value instanceof Array) && c.value.length === 0)) {
+            return {
+                required: true
+            };
+        }
+        return null;
+    }
+
+    // -------------------------------------------------------------------------
+    // Public Methods
+    // -------------------------------------------------------------------------
 
     change(value: any) {
         this.model = value;
-        this.modelChange.emit(value);
+        this.onChange(this.model);
     }
 
 }
@@ -26,8 +92,13 @@ export class RadioGroup {
     selector: "radio-item",
     template: `
 <div class="radio-item" (click)="check()">
-    <input type="radio" [checked]="isChecked()" [disabled]="disabled"/> <ng-content></ng-content>
-</div>`
+    <input class="radio-item-input" type="radio" [checked]="isChecked()" [disabled]="disabled"/> <ng-content></ng-content>
+</div>`,
+    styles: [`
+.radio-item {
+    cursor: pointer;
+}
+`]
 })
 export class RadioItem {
 
@@ -50,21 +121,45 @@ export class RadioItem {
 }
 
 @Directive({
-    selector: "[radio-box]"
+    selector: "input[type=radio]",
+    providers: [
+        new Provider(NG_VALUE_ACCESSOR, {
+            useExisting: forwardRef(() => RadioBox),
+            multi: true
+        }),
+        new Provider(NG_VALIDATORS, {
+            useExisting: forwardRef(() => RadioBox),
+            multi: true
+        })
+    ]
 })
-export class RadioBox {
+export class RadioBox implements ControlValueAccessor, Validator {
 
-    @HostBinding("type")
-    type = "radio";
-
-    @Output()
-    modelChange = new EventEmitter();
+    // -------------------------------------------------------------------------
+    // Inputs
+    // -------------------------------------------------------------------------
 
     @Input()
-    model: any;
+    required: boolean = false;
+
+    // -------------------------------------------------------------------------
+    // Private variables
+    // -------------------------------------------------------------------------
+
+    private model: any;
+    private onChange: (m: any) => void;
+    private onTouched: (m: any) => void;
+
+    // -------------------------------------------------------------------------
+    // Constructor
+    // -------------------------------------------------------------------------
 
     constructor(private element: ElementRef, @Optional() @Host() private radioGroup: RadioGroup) {
     }
+
+    // -------------------------------------------------------------------------
+    // Bindings
+    // -------------------------------------------------------------------------
 
     @HostBinding("checked")
     get checked() {
@@ -79,8 +174,37 @@ export class RadioBox {
             this.radioGroup.change(element.value);
         } else {
             this.model = element.value;
-            this.modelChange.emit(element.value);
+            this.onChange(this.model);
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // Implemented from ControlValueAccessor
+    // -------------------------------------------------------------------------
+
+    writeValue(value: any): void {
+        this.model = value;
+    }
+
+    registerOnChange(fn: any): void {
+        this.onChange = fn;
+    }
+
+    registerOnTouched(fn: any): void {
+        this.onTouched = fn;
+    }
+
+    // -------------------------------------------------------------------------
+    // Implemented from Validator
+    // -------------------------------------------------------------------------
+
+    validate(c: Control) {
+        if (this.required && (!c.value || (c.value instanceof Array) && c.value.length === 0)) {
+            return {
+                required: true
+            };
+        }
+        return null;
     }
     
 }

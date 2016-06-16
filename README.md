@@ -28,21 +28,21 @@ Please star a project if you liked it, or create an issue if you have problems w
 If you need a simple checkbox for your variable:
 
 ```html
-<input check-box [(model)]="rememberMe" [value]="true" [uncheckedValue]="false"> remember me?<br/>
+<input type="checkbox" [(ngModel)]="rememberMe" [value]="true" [uncheckedValue]="false"> remember me?<br/>
 ```
 
-* `model` is a model you are trying to change (rememberMe is a boolean variable in your component)
-* `value` is a value that should be written to the model when checkbox is checked
-* `uncheckedValue` is a value that should be written to the model when checkbox is unchecked.
-Optional, by default this value in equal to *null*
+* `ngModel` is a model you are trying to change (rememberMe is a boolean variable in your component)
+* `value` is a value that should be written to the model when checkbox is checked. Default is **true**.
+* `uncheckedValue` is a value that should be written to the model when checkbox is unchecked. Default is **false**.
+* `required` you can set it to required, and you can use it with forms
 
 If your model is an array and you want to push multiple items into it, you can use it with this component:
 
 ```html
-<input check-box [(model)]="orderBy" value="rating"> Rating<br/>
-<input check-box [(model)]="orderBy" value="date"> Date<br/>
-<input check-box [(model)]="orderBy" value="watches"> Watch count<br/>
-<input check-box [(model)]="orderBy" value="comments"> Comment count<br/>
+<input type="checkbox" [(ngModel)]="orderBy" value="rating"> Rating<br/>
+<input type="checkbox" [(ngModel)]="orderBy" value="date"> Date<br/>
+<input type="checkbox" [(ngModel)]="orderBy" value="watches"> Watch count<br/>
+<input type="checkbox" [(ngModel)]="orderBy" value="comments"> Comment count<br/>
 ```
 
 Don't forget to initialize your `orderBy` array.
@@ -51,29 +51,50 @@ Don't forget to initialize your `orderBy` array.
 If you need to select only one item from the multiple options, you need a radio boxes:
 
 ```html
-<input radio-box [(model)]="sortBy" value="rating"> Rating<br/>
-<input radio-box [(model)]="sortBy" value="date"> Date<br/>
-<input radio-box [(model)]="sortBy" value="watches"> Watch count<br/>
-<input radio-box [(model)]="sortBy" value="comments"> Comment count<br/>
+<input type="radio" [(ngModel)]="sortBy" value="rating"> Rating<br/>
+<input type="radio" [(ngModel)]="sortBy" value="date"> Date<br/>
+<input type="radio" [(ngModel)]="sortBy" value="watches"> Watch count<br/>
+<input type="radio" [(ngModel)]="sortBy" value="comments"> Comment count<br/>
 ```
 
 To simplify this selection you can use checkbox and radio groups:
 
 ```html
-<radio-group [(model)]="sortBy">
-    <input radio-box value="rating"> Rating<br/>
-    <input radio-box value="date"> Date<br/>
-    <input radio-box value="watches"> Watch count<br/>
-    <input radio-box value="comments"> Comment count<br/>
+<radio-group [(ngModel)]="sortBy" [required]="true">
+    <input type="radio" value="rating"> Rating<br/>
+    <input type="radio" value="date"> Date<br/>
+    <input type="radio" value="watches"> Watch count<br/>
+    <input type="radio" value="comments"> Comment count<br/>
 </radio-group>
 
-<checkbox-group [(model)]="orderBy">
-    <input check-box value="rating"> Rating<br/>
-    <input check-box value="date"> Date<br/>
-    <input check-box value="watches"> Watch count<br/>
-    <input check-box value="comments"> Comment count<br/>
+<checkbox-group [(ngModel)]="orderBy">
+    <input type="checkbox" value="rating"> Rating<br/>
+    <input type="checkbox" value="date"> Date<br/>
+    <input type="checkbox" value="watches"> Watch count<br/>
+    <input type="checkbox" value="comments"> Comment count<br/>
 </checkbox-group>
 ```
+
+If you want to go deeper and make better (but less customizable) radio groups, then use radio-groups in composition
+with radio-items:
+
+```html
+<radio-group [(ngModel)]="sortBy">
+    <radio-item value="rating">Rating</radio-item>
+    <radio-item value="date">Date</radio-item>
+    <radio-item value="watches">Watch count</radio-item>
+    <radio-item value="comments">Comment count</radio-item>
+</radio-group>
+
+<checkbox-group [(ngModel)]="orderBy" [required]="true">
+    <checkbox-item value="rating">Rating</checkbox-item>
+    <checkbox-item value="date">Date</checkbox-item>
+    <checkbox-item value="watches">Watch count</checkbox-item>
+    <checkbox-item value="comments">Comment count</checkbox-item>
+</checkbox-group>
+```
+
+Last method allows you to click on labels and you click will treat like you clicked on a checkbox itself.
 
 ## Sample
 
@@ -88,46 +109,96 @@ import {RADIO_GROUP_DIRECTIVES} from "ng2-radio-group";
     template: `
 
     <h4>Is something enabled: (non-multiple checkbox)</h4>
-    <input check-box [(model)]="rememberMe" [value]="true" [uncheckedValue]="false"> remember me?<br/>
-    <i>rememberMe value:</i> <b>{{ rememberMe }}</b><br/><br/>
+    <input type="checkbox" [(ngModel)]="isSomethingEnabled"/>
+    <i (click)="click()">isSomethingEnabled value:</i> <b>{{ isSomethingEnabled }}</b><br/><br/>
 
     <h4>Order by: (multiple check boxes)</h4>
-    <input check-box [(model)]="orderBy" value="rating"> Rating<br/>
-    <input check-box [(model)]="orderBy" value="date"> Date<br/>
-    <input check-box [(model)]="orderBy" value="watches"> Watch count<br/>
-    <input check-box [(model)]="orderBy" value="comments"> Comment count<br/>
+    <input type="checkbox" [(ngModel)]="orderBy" value="rating"> Rating<br/>
+    <input type="checkbox" [(ngModel)]="orderBy" value="date"> Date<br/>
+    <input type="checkbox" [(ngModel)]="orderBy" value="watches"> Watch count<br/>
+    <input type="checkbox" [(ngModel)]="orderBy" value="comments"> Comment count<br/>
 
     <i>selected items:</i> <b><span *ngFor="let order of orderBy">{{ order }} </span></b><br/><br/>
 
+
     <h4>Sort by: (simple radio boxes)</h4>
-    <input radio-box [(model)]="sortBy" value="rating"> Rating<br/>
-    <input radio-box [(model)]="sortBy" value="date"> Date<br/>
-    <input radio-box [(model)]="sortBy" value="watches"> Watch count<br/>
-    <input radio-box [(model)]="sortBy" value="comments"> Comment count<br/>
+    <input type="radio" [(ngModel)]="sortWithoutGroup" value="rating"> Rating<br/>
+    <input type="radio" [(ngModel)]="sortWithoutGroup" value="date"> Date<br/>
+    <input type="radio" [(ngModel)]="sortWithoutGroup" value="watches"> Watch count<br/>
+    <input type="radio" [(ngModel)]="sortWithoutGroup" value="comments"> Comment count<br/>
 
     <i>selected item:</i> <b>{{ sortWithoutGroup }}</b><br/><br/>
 
 
     <h4>Sort by: (radio boxes wrapped in the group)</h4>
-    <radio-group [(model)]="sortBy">
-        <input radio-box value="rating"> Rating<br/>
-        <input radio-box value="date"> Date<br/>
-        <input radio-box value="watches"> Watch count<br/>
-        <input radio-box value="comments"> Comment count<br/>
+    <radio-group [(ngModel)]="sortBy">
+        <input type="radio" value="rating"> Rating<br/>
+        <input type="radio" value="date"> Date<br/>
+        <input type="radio" value="watches"> Watch count<br/>
+        <input type="radio" value="comments"> Comment count<br/>
     </radio-group>
 
     <i>selected item:</i> <b>{{ sortBy }}</b><br/><br/>
 
 
-    <h4>Order by: (radio boxes wrapped in the group)</h4>
-    <checkbox-group [(model)]="orderBy">
-        <input check-box value="rating"> Rating<br/>
-        <input check-box value="date"> Date<br/>
-        <input check-box value="watches"> Watch count<br/>
-        <input check-box value="comments"> Comment count<br/>
+    <h4>Order by: (check boxes wrapped in the group)</h4>
+    <checkbox-group [(ngModel)]="orderBy">
+        <input type="checkbox" value="rating"> Rating<br/>
+        <input type="checkbox" value="date"> Date<br/>
+        <input type="checkbox" value="watches"> Watch count<br/>
+        <input type="checkbox" value="comments"> Comment count<br/>
     </checkbox-group>
 
     <i>selected items:</i> <b><span *ngFor="let order of orderBy">{{ order }} </span></b><br/><br/>
+
+
+    <h4>Sort by: (check boxes in group, less flexible, but simpler and the whole component is clickable)</h4>
+    <radio-group [(ngModel)]="sortBy">
+        <radio-item value="rating">Rating</radio-item>
+        <radio-item value="date">Date</radio-item>
+        <radio-item value="watches">Watch count</radio-item>
+        <radio-item value="comments">Comment count</radio-item>
+    </radio-group>
+
+    <i>selected item:</i> <b>{{ sortBy }}</b><br/><br/>
+
+
+    <h4>Order by: (radio boxes in group, less flexible, but simpler and the whole component is clickable)</h4>
+    <checkbox-group [(ngModel)]="orderBy">
+        <checkbox-item value="rating">Rating</checkbox-item>
+        <checkbox-item value="date">Date</checkbox-item>
+        <checkbox-item value="watches">Watch count</checkbox-item>
+        <checkbox-item value="comments">Comment count</checkbox-item>
+    </checkbox-group>
+
+    <i>selected items:</i> <b><span *ngFor="let order of orderBy">{{ order }} </span></b><br/><br/>
+
+
+    <h4>Example with form:</h4>
+
+    <form>
+        <radio-group ngControl="sortByControl" #sortByRadioGroup="ngForm" [(ngModel)]="sortBy" [required]="true">
+            <input type="radio" value=""> Not selected<br/>
+            <input type="radio" value="rating"> Rating<br/>
+            <input type="radio" value="date"> Date<br/>
+            <input type="radio" value="watches"> Watch count<br/>
+            <input type="radio" value="comments"> Comment count<br/>
+        </radio-group>
+        <div [hidden]="sortByRadioGroup.valid || sortByRadioGroup.pristine" class="alert alert-danger">
+            Sort by is required
+        </div>
+        <br/>
+        <checkbox-group ngControl="orderByControl" #orderByCheckboxGroup="ngForm" [(ngModel)]="orderBy" [required]="true">
+            <checkbox-item value="rating">Rating</checkbox-item>
+            <checkbox-item value="date">Date</checkbox-item>
+            <checkbox-item value="watches">Watch count</checkbox-item>
+            <checkbox-item value="comments">Comment count</checkbox-item>
+        </checkbox-group>
+        <div [hidden]="orderByCheckboxGroup.valid || orderByCheckboxGroup.pristine" class="alert alert-danger">
+            Order by is required
+        </div>
+    </form>
+
     `,
     directives: [RADIO_GROUP_DIRECTIVES]
 })
@@ -142,3 +213,12 @@ export class App {
 
 Take a look on samples in [./sample](https://github.com/pleerock/ng2-radio-group/tree/master/sample) for more examples of
 usages.
+
+## Release notes
+
+**0.0.5**
+
+* `[(model)]` now should be `[(ngModel)]`
+* component now can be used with forms and validation can be applied (like `required`)
+* `check-box` and `type="radio"` has been removed since starting from angular2.rc1 `[(ngModel)]` works with
+input="checkbox" and input="radio" out of the box
