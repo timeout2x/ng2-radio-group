@@ -1,6 +1,6 @@
 {
   "name": "ng2-radio-group",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Checkbox group and radio group control for your angular2 applications using bootstrap3.",
   "license": "MIT",
   "readmeFilename": "README.md",
@@ -26,14 +26,15 @@
     "angular2-radio",
     "angular2-radio-group"
   ],
-  "dependencies": {
-    "@angular/core": "2.0.0-rc.1"
+  "peerDependencies": {
+    "@angular/core": "^2.0.0-rc.1"
   },
   "devDependencies": {
-    "@angular/common": "^2.0.0-rc.1",
-    "@angular/compiler": "^2.0.0-rc.1",
-    "@angular/platform-browser": "^2.0.0-rc.1",
-    "@angular/platform-browser-dynamic": "^2.0.0-rc.1",
+    "@angular/core": "2.0.0-rc.2",
+    "@angular/common": "^2.0.0-rc.2",
+    "@angular/compiler": "^2.0.0-rc.2",
+    "@angular/platform-browser": "^2.0.0-rc.2",
+    "@angular/platform-browser-dynamic": "^2.0.0-rc.2",
     "bootstrap": "^3.3.6",
     "chai": "^3.4.1",
     "del": "^2.2.0",
