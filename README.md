@@ -81,7 +81,7 @@ If you want to go deeper and make better (but less customizable) radio groups, t
 with radio-items:
 
 ```html
-<radio-group [(ngModel)]="sortBy">
+<radio-group [(ngModel)]="sortBy" [disabled]="false">
     <radio-item value="rating">Rating</radio-item>
     <radio-item value="date">Date</radio-item>
     <radio-item value="watches">Watch count</radio-item>

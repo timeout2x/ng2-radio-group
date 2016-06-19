@@ -8,13 +8,14 @@ import {
     HostListener,
     Optional,
     Provider,
-    forwardRef
+    forwardRef, Inject, ViewEncapsulation
 } from "@angular/core";
 import {Validator, ControlValueAccessor, NG_VALUE_ACCESSOR, NG_VALIDATORS, Control} from "@angular/common";
 
 @Component({
     selector: "radio-group",
     template: `<div class="radio-group"><ng-content></ng-content></div>`,
+    encapsulation: ViewEncapsulation.None,
     providers: [
         new Provider(NG_VALUE_ACCESSOR, {
             useExisting: forwardRef(() => RadioGroup),
@@ -34,6 +35,12 @@ export class RadioGroup {
 
     @Input()
     required: boolean = false;
+
+    @Input()
+    disabled: boolean = false;
+
+    @Input()
+    trackBy: string;
 
     // -------------------------------------------------------------------------
     // Public Properties
@@ -85,20 +92,32 @@ export class RadioGroup {
         this.model = value;
         this.onChange(this.model);
     }
+    
+    isValue(value: any) {
+        if (this.trackBy) {
+            return this.model[this.trackBy] === value[this.trackBy];
+        } else {
+            return this.model === value;
+        }
+    }
 
 }
 
 @Component({
     selector: "radio-item",
     template: `
-<div class="radio-item" (click)="check()">
-    <input class="radio-item-input" type="radio" [checked]="isChecked()" [disabled]="disabled"/> <ng-content></ng-content>
+<div class="radio-item" (click)="check()" [class.disabled]="isDisabled()">
+    <input class="radio-item-input" type="radio" [checked]="isChecked()" [disabled]="isDisabled()"/> <ng-content></ng-content>
 </div>`,
     styles: [`
 .radio-item {
     cursor: pointer;
 }
-`]
+.radio-item.disabled {
+    cursor: not-allowed;
+}
+`],
+    encapsulation: ViewEncapsulation.None
 })
 export class RadioItem {
 
@@ -108,7 +127,7 @@ export class RadioItem {
     @Input()
     disabled: boolean;
 
-    constructor(@Host() private radioGroup: RadioGroup) {
+    constructor(@Host() @Inject(forwardRef(() => RadioGroup)) private radioGroup: RadioGroup) {
     }
 
     check() {
@@ -116,7 +135,11 @@ export class RadioItem {
     }
 
     isChecked() {
-        return this.radioGroup.model === this.value;
+        return this.radioGroup.isValue(this.value);
+    }
+
+    isDisabled() {
+        return this.disabled === true || this.radioGroup.disabled;
     }
 }
 

@@ -1,9 +1,13 @@
-import {Component, Input, Host, Directive, HostBinding, Optional, HostListener, Provider, forwardRef} from "@angular/core";
+import {
+    Component, Input, Host, Directive, HostBinding, Optional, HostListener, Provider, forwardRef,
+    Inject, ViewEncapsulation, ContentChildren
+} from "@angular/core";
 import {NG_VALUE_ACCESSOR, NG_VALIDATORS, Validator, ControlValueAccessor, Control} from "@angular/common";
 
 @Component({
     selector: "checkbox-group",
     template: `<div class="checkbox-group"><ng-content></ng-content></div>`,
+    encapsulation: ViewEncapsulation.None,
     providers: [
         new Provider(NG_VALUE_ACCESSOR, {
             useExisting: forwardRef(() => CheckboxGroup),
@@ -23,12 +27,25 @@ export class CheckboxGroup implements ControlValueAccessor, Validator {
 
     @Input()
     required: boolean = false;
+
+    @Input()
+    disabled: boolean = false;
+
+    @Input()
+    trackBy: string;
     
+    // -------------------------------------------------------------------------
+    // Public Properties
+    // -------------------------------------------------------------------------
+
+    @ContentChildren(forwardRef(() => CheckboxItem))
+    checkboxItems: CheckboxItem[];
+
     // -------------------------------------------------------------------------
     // Private Properties
     // -------------------------------------------------------------------------
 
-    private model: any[];
+    private model: any;
     private onChange: (m: any) => void;
     private onTouched: (m: any) => void;
 
@@ -65,21 +82,63 @@ export class CheckboxGroup implements ControlValueAccessor, Validator {
     // Public Methods
     // -------------------------------------------------------------------------
 
+    addValue(value: any) {
+        if (!this.hasValue(value))
+            this.model.push(value);
+    }
+
+    removeValue(value: any) {
+        const index = this.model.indexOf(value);
+        if (index !== -1)
+            this.model.splice(index, 1);
+    }
+
     addOrRemoveValue(value: any) {
         if (this.hasValue(value)) {
-            this.model.splice(this.model.indexOf(value), 1);
+            this.removeValue(value);
         } else {
-            this.model.push(value);
+            this.addValue(value);
         }
         this.onChange(this.model);
     }
 
     hasValue(value: any) {
         if (this.model instanceof Array) {
-            return this.model.indexOf(value) !== -1;
+            if (this.trackBy) {
+                return !!this.model.find((i: any) => i[this.trackBy] === value[this.trackBy]);
+            } else {
+                return this.model.indexOf(value) !== -1;
+            }
         } else {
-            return this.model === value;
+            if (this.trackBy) {
+                return this.model[this.trackBy] === value[this.trackBy];
+            } else {
+                return this.model === value;
+            }
         }
+    }
+
+    selectAll() {
+        if (this.checkboxItems)
+            this.checkboxItems.forEach(item => this.addValue(item.value));
+    }
+
+    deselectAll() {
+        if (this.checkboxItems)
+            this.checkboxItems.forEach(item => this.removeValue(item.value));
+    }
+
+    isAllSelected() {
+        if (this.checkboxItems) {
+            let has = true;
+            this.checkboxItems.forEach(item => {
+                if (has)
+                    has = this.hasValue(item.value);
+            });
+            return has;
+        }
+
+        return false;
     }
 
 }
@@ -87,12 +146,16 @@ export class CheckboxGroup implements ControlValueAccessor, Validator {
 @Component({
     selector: "checkbox-item",
     template: `
-<div class="checkbox-item" (click)="check()">
-    <input class="checkbox-item-input" type="checkbox" [checked]="isChecked()"/> <ng-content></ng-content>
+<div class="checkbox-item" (click)="toggleCheck()" [class.disabled]="isDisabled()">
+    <input class="checkbox-item-input" type="checkbox" [checked]="isChecked()" [disabled]="isDisabled()"/> <ng-content></ng-content>
 </div>`,
+    encapsulation: ViewEncapsulation.None,
     styles: [`
 .checkbox-item {
     cursor: pointer;
+}
+.checkbox-item.disabled {
+    cursor: not-allowed;
 }
 `]
 })
@@ -101,15 +164,23 @@ export class CheckboxItem {
     @Input()
     value: any;
 
-    constructor(@Host() private checkboxGroup: CheckboxGroup) {
+    @Input()
+    disabled: boolean;
+
+    constructor(@Host() @Inject(forwardRef(() => CheckboxGroup))  private checkboxGroup: CheckboxGroup) {
     }
 
-    check() {
+    toggleCheck() {
+        if (this.isDisabled()) return;
         this.checkboxGroup.addOrRemoveValue(this.value);
     }
 
     isChecked() {
         return this.checkboxGroup.hasValue(this.value);
+    }
+
+    isDisabled() {
+        return this.disabled === true || this.checkboxGroup.disabled;
     }
 
 }
@@ -154,7 +225,7 @@ export class CheckBox implements ControlValueAccessor, Validator {
     // Constructor
     // -------------------------------------------------------------------------
 
-    constructor(@Optional() @Host() private checkboxGroup: CheckboxGroup) {
+    constructor(@Optional() @Host() @Inject(forwardRef(() => CheckboxGroup)) private checkboxGroup: CheckboxGroup) {
     }
 
     // -------------------------------------------------------------------------

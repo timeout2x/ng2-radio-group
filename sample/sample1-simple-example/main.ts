@@ -1,6 +1,7 @@
 import {bootstrap} from "@angular/platform-browser-dynamic";
 import {Component} from "@angular/core";
 import {RADIO_GROUP_DIRECTIVES} from "../../src/index";
+import {Car} from "./Car";
 
 @Component({
     selector: "app",
@@ -102,6 +103,28 @@ import {RADIO_GROUP_DIRECTIVES} from "../../src/index";
         <i>selected items:</i> <b><span *ngFor="let order of orderBy">{{ order }} </span></b><br/><br/>
     </form>
     
+    <h4>Disabled group:</h4>
+    <checkbox-group [(ngModel)]="orderBy" [disabled]="true">
+        <checkbox-item value="rating">Rating</checkbox-item>
+        <checkbox-item value="date">Date</checkbox-item>
+        <checkbox-item value="watches">Watch count</checkbox-item>
+        <checkbox-item value="comments">Comment count</checkbox-item>
+    </checkbox-group>
+    
+    <h4>Selecting objects:</h4>
+    <checkbox-group [(ngModel)]="selectedCars">
+        <checkbox-item *ngFor="let car of cars" [value]="car">{{ car.name }}</checkbox-item>
+    </checkbox-group>
+    <b>selectedCars:</b>
+    <pre>{{ selectedCars | json }}</pre>
+    
+    <h4>Using track by:</h4>
+    <checkbox-group [(ngModel)]="selectedCars" trackBy="id">
+        <checkbox-item *ngFor="let car of cars" [value]="car">{{ car.name }}</checkbox-item>
+    </checkbox-group>
+    <b>selectedCars:</b>
+    <pre>{{ selectedCars | json }}</pre>
+    
 </div>
 `,
     directives: [RADIO_GROUP_DIRECTIVES]
@@ -112,8 +135,24 @@ export class Sample1App {
     sortBy: string = "date";
     orderBy: string[] = ["rating", "comments"];
 
-    click(a: any) {
-        console.log(this.isSomethingEnabled);
+    selectedCars: Car[] = [];
+    cars: Car[];
+    anotherCars: Car[];
+
+    constructor() {
+        this.cars = [
+            new Car(1, "BMW", 2000),
+            new Car(2, "Mercedes", 1999),
+            new Car(3, "Opel", 2008)
+        ];
+        this.anotherCars = [
+            new Car(1, "BMW", 2000),
+            new Car(2, "Mercedes", 1999),
+            new Car(3, "Opel", 2008)
+        ];
+        this.selectedCars = [
+            this.anotherCars[1]
+        ];
     }
 
 }
