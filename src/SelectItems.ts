@@ -16,71 +16,81 @@ import {RadioItem, RadioGroup} from "./RadioGroup";
     selector: "select-items",
     template: `
 <div class="select-items">
-    <div class="select-items-search" [hidden]="!searchBy">
-        <input type="text" [(ngModel)]="keyword" [placeholder]="searchLabel || ''">
+    <div class="select-items-search" [class.hidden]="!searchBy">
+        <input class="form-control" type="text" [(ngModel)]="keyword" [placeholder]="searchLabel || ''">
     </div>
     <div *ngIf="isMultiple()">
-        <div class="select-all" 
-            [hidden]="(searchBy && keyword) || !selectAllLabel || !getItems().length" 
+        <div class="select-items-item select-all" 
             (click)="selectAll()" 
-            [class.active]="active === '--select-all'">
-            <input type="checkbox" [checked]="isAllSelected(getItems())"> {{ selectAllLabel }}
+            [ngStyle]="{ display: ((searchBy && keyword) || !selectAllLabel || !getItems().length) ? 'none' : 'block' }"
+            [class.active]="active === '--select-all'"
+            [class.selected]="isAllSelected(getItems())">
+            <input type="checkbox" [checked]="isAllSelected(getItems())">
+            <span class="select-items-label">{{ selectAllLabel }}</span>
         </div>
         <checkbox-group #checkboxGroup [(ngModel)]="model" (ngModelChange)="onChange(model)" [trackBy]="trackBy">
-            <div *ngFor="let item of getItems()" 
+            <div *ngFor="let item of getItems(); let last = last" 
                 [class.active]="active === item"
-                class="select-items-item">
-                <span [hidden]="hideControls">
-                    <checkbox-item 
-                        [value]="getItemValue(item)" 
-                        [disabled]="isItemDisabled(item)">
-                        <span class="select-items-label">
-                            {{ getItemLabel(item) }}
-                        </span>
-                    </checkbox-item>
-                </span>
-                <span class="select-items-label" [hidden]="!hideControls">
-                    {{ getItemLabel(item) }}
-                </span>
-                <span class="remove-button" [hidden]="!removeButton" (click)="removeItem(item)">×</span>
+                [class.hide-controls]="hideControls === true"
+                [class.selected]="checkboxItem.isChecked()"
+                class="select-items-item item">
+                <checkbox-item #checkboxItem
+                    [value]="getItemValue(item)" 
+                    [readonly]="readonly"
+                    [disabled]="isItemDisabled(item)">
+                    <span class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="last" class="separator"></span>
+                </checkbox-item>
+                <span class="remove-button" 
+                      [class.hidden]="!removeButton" (click)="removeItem(item)">×</span>
             </div>
         </checkbox-group>
     </div>
     <div *ngIf="!isMultiple()">
-        <div class="no-selection" [hidden]="!noSelectionLabel" (click)="resetModel()">
-            <input type="radio" [checked]="!model"> {{ noSelectionLabel }}
+        <div class="select-items-item no-selection" 
+            [class.hidden]="!noSelectionLabel"
+            (click)="resetModel()"
+            [class.active]="active === '--no-selection'"
+            [class.selected]="!model">
+            <input type="radio" [checked]="!model">
+            <span class="select-items-label">{{ noSelectionLabel }}</span>
         </div>
         <radio-group #radioGroup [(ngModel)]="model" (ngModelChange)="onChange(model)" [trackBy]="trackBy">
-            <div *ngFor="let item of getItems()"
+            <div *ngFor="let item of getItems(); let last = last"
                 [class.active]="active === item"
-                class="select-items-item">
-                <span [hidden]="hideControls">
-                    <radio-item 
-                        [value]="getItemValue(item)" 
-                        [disabled]="isItemDisabled(item)">
-                        <span class="select-items-label">
-                            {{ getItemLabel(item) }}
-                        </span>
-                    </radio-item>
-                </span>
-                <span class="select-items-label" [hidden]="!hideControls">
-                    {{ getItemLabel(item) }}
-                </span>
+                [class.hide-controls]="hideControls === true"
+                [class.selected]="radioItem.isChecked()"
+                class="select-items-item item">
+                <radio-item #radioItem
+                    [value]="getItemValue(item)" 
+                    [readonly]="readonly"
+                    [disabled]="isItemDisabled(item)">
+                    <span class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="last" class="separator"></span>
+                </radio-item>
+                <span class="remove-button" [class.hidden]="!removeButton" (click)="removeItem(item)">×</span>
             </div>
         </radio-group>
     </div>
-    <div class="more-button" (click)="showMore()" [hidden]="isMaxLimitReached || !moreLabel || isMoreShown">
+    <div class="more-button" (click)="showMore()" [class.hidden]="isMaxLimitReached || !moreLabel || isMoreShown">
         <a>{{ moreLabel }}</a>
         <div class="caret-top"></div>
     </div>
-    <div class="hide-button" (click)="hideMore()" [hidden]="isMaxLimitReached || !hideLabel || !isMoreShown">
+    <div class="hide-button" (click)="hideMore()" [class.hidden]="isMaxLimitReached || !hideLabel || !isMoreShown">
         <a>{{ hideLabel }}</a> 
         <div class="caret-bottom"></div>
     </div>
 </div>`,
     styles: [`
+.select-items .hidden {
+    display: none;
+}
+.select-items .select-items-search {
+    margin-bottom: 5px;
+}
 .select-items .select-all, .select-items .no-selection {
     cursor: pointer;
+}
+.select-items .select-items-label {
+    padding-left: 3px;
 }
 .select-items .remove-button {
     font-size: 12px;
@@ -88,6 +98,10 @@ import {RadioItem, RadioGroup} from "./RadioGroup";
     color: #999;
     vertical-align: text-bottom;
     cursor: pointer;
+}
+.select-items .select-items-item.hide-controls .checkbox-item input[type=checkbox], 
+.select-items .select-items-item.hide-controls .radio-item input[type=radio] {
+    display: none;
 }
 .select-items .checkbox-item, .select-items .radio-item {
     display: inline;
@@ -154,7 +168,7 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
     trackBy: string;
 
     @Input()
-    disableBy: string;
+    disableBy: string|((item: any) => string);
 
     @Input()
     labelBy: string|((item: any) => string);
@@ -173,6 +187,12 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
 
     @Input()
     limit: number;
+
+    @Input()
+    disabled: boolean = false;
+
+    @Input()
+    readonly: boolean = false;
 
     @Input()
     hideSelected: boolean;
@@ -203,6 +223,9 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
 
     @Input()
     minModelSize: number;
+
+    @Input()
+    filter: (items: any[]) => any[];
 
     // -------------------------------------------------------------------------
     // Public Properties
@@ -282,6 +305,9 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
     }
 
     isItemDisabled(item: any) {
+        if (this.disabled)
+            return true;
+
         if (this.disableBy) {
             if (typeof this.disableBy === "string") {
                 return !!item[this.disableBy as string];
@@ -331,6 +357,8 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
     }
 
     getItems() {
+        if (!this.items) return [];
+        
         let items = this.items.map(item => item);
         if (this.searchBy && this.keyword) {
             items = items.filter(item => {
@@ -389,6 +417,9 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
             if (startFrom > 0 && !this.isMoreShown)
                 items.splice(startFrom * -1);
         }
+        
+        if (this.filter)
+            this.filter(items);
 
         return items;
     }

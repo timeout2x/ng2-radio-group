@@ -1,7 +1,6 @@
 # ng2-radio-group
 
-Checkbox group and radio group control for your angular2 applications using bootstrap3.
-Does not depend of jquery. If you don't want to use it without bootstrap - simply create proper css classes. 
+Checkbox group and radio group control for your angular2 applications. Does not depend of jquery.
 Please star a project if you liked it, or create an issue if you have problems with it.
 
 ![angular 2 radio groups and checkbox groups](https://raw.githubusercontent.com/pleerock/ng2-radio-group/master/resources/radio-group-example.png)

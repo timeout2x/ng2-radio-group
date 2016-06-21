@@ -40,6 +40,9 @@ export class RadioGroup {
     disabled: boolean = false;
 
     @Input()
+    readonly: boolean = false;
+
+    @Input()
     trackBy: string;
 
     // -------------------------------------------------------------------------
@@ -94,11 +97,15 @@ export class RadioGroup {
     }
     
     isValue(value: any) {
-        if (this.trackBy) {
-            return this.model[this.trackBy] === value[this.trackBy];
-        } else {
-            return this.model === value;
+        if (this.model !== null && this.model !== undefined) {
+            if (this.trackBy) {
+                return this.model[this.trackBy] === value[this.trackBy];
+            } else {
+                return this.model === value;
+            }
         }
+
+        return false;
     }
 
 }
@@ -106,7 +113,10 @@ export class RadioGroup {
 @Component({
     selector: "radio-item",
     template: `
-<div class="radio-item" (click)="check()" [class.disabled]="isDisabled()">
+<div (click)="check()" 
+     [class.disabled]="isDisabled()"
+     [class.readonly]="isReadonly()"
+     class="radio-item" >
     <input class="radio-item-input" type="radio" [checked]="isChecked()" [disabled]="isDisabled()"/> <ng-content></ng-content>
 </div>`,
     styles: [`
@@ -115,6 +125,9 @@ export class RadioGroup {
 }
 .radio-item.disabled {
     cursor: not-allowed;
+}
+.radio-item.readonly {
+    cursor: default;
 }
 `],
     encapsulation: ViewEncapsulation.None
@@ -125,12 +138,16 @@ export class RadioItem {
     value: any;
 
     @Input()
-    disabled: boolean;
+    disabled: boolean = false;
+
+    @Input()
+    readonly: boolean = false;
 
     constructor(@Host() @Inject(forwardRef(() => RadioGroup)) private radioGroup: RadioGroup) {
     }
 
     check() {
+        if (this.isReadonly() || this.isDisabled()) return;
         this.radioGroup.change(this.value);
     }
 
@@ -140,6 +157,10 @@ export class RadioItem {
 
     isDisabled() {
         return this.disabled === true || this.radioGroup.disabled;
+    }
+
+    isReadonly() {
+        return this.readonly || this.radioGroup.readonly;
     }
 }
 
@@ -197,6 +218,7 @@ export class RadioBox implements ControlValueAccessor, Validator {
             this.radioGroup.change(element.value);
         } else {
             this.model = element.value;
+            // this.writeValue(this.model);
             this.onChange(this.model);
         }
     }

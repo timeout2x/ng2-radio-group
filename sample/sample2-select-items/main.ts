@@ -1,6 +1,6 @@
 import {bootstrap} from "@angular/platform-browser-dynamic";
 import {Component} from "@angular/core";
-import {RADIO_GROUP_DIRECTIVES} from "../../src/index";
+import {SELECT_DIRECTIVES} from "../../src/index";
 import {Car} from "../sample1-simple-example/Car";
 
 @Component({
@@ -316,6 +316,15 @@ import {Car} from "../sample1-simple-example/Car";
     <h4>model: </h4>
     <pre>{{ selectedCarName | json }}</pre>
     
+    <h4>Select items with explicitly set multiple option:</h4>
+    <select-items [(ngModel)]="allNewSelectedCars"
+                  [items]="cars"
+                  [multiple]="true"
+                  labelBy="name">
+    </select-items>
+    <h4>model: </h4>
+    <pre>{{ allNewSelectedCars | json }}</pre>
+    
     <h4>All-in-one select items:</h4>
     <select-items [(ngModel)]="selectedCar"
                   [items]="cars"
@@ -339,7 +348,7 @@ import {Car} from "../sample1-simple-example/Car";
     
 </div>
 `,
-    directives: [RADIO_GROUP_DIRECTIVES]
+    directives: [SELECT_DIRECTIVES]
 })
 export class Sample1App {
 

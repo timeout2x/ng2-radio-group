@@ -6,7 +6,7 @@ import {NG_VALUE_ACCESSOR, NG_VALIDATORS, Validator, ControlValueAccessor, Contr
 
 @Component({
     selector: "checkbox-group",
-    template: `<div class="checkbox-group"><ng-content></ng-content></div>`,
+    template: `<ng-content></ng-content>`,
     encapsulation: ViewEncapsulation.None,
     providers: [
         new Provider(NG_VALUE_ACCESSOR, {
@@ -30,6 +30,9 @@ export class CheckboxGroup implements ControlValueAccessor, Validator {
 
     @Input()
     disabled: boolean = false;
+
+    @Input()
+    readonly: boolean = false;
 
     @Input()
     trackBy: string;
@@ -83,14 +86,22 @@ export class CheckboxGroup implements ControlValueAccessor, Validator {
     // -------------------------------------------------------------------------
 
     addValue(value: any) {
-        if (!this.hasValue(value))
+
+        if (!this.hasValue(value)) {
+            if (!this.model)
+                this.model = [];
+            
             this.model.push(value);
+            this.onChange(this.model);
+        }
     }
 
     removeValue(value: any) {
         const index = this.model.indexOf(value);
-        if (index !== -1)
+        if (index !== -1) {
             this.model.splice(index, 1);
+            this.onChange(this.model);
+        }
     }
 
     addOrRemoveValue(value: any) {
@@ -99,23 +110,25 @@ export class CheckboxGroup implements ControlValueAccessor, Validator {
         } else {
             this.addValue(value);
         }
-        this.onChange(this.model);
     }
 
     hasValue(value: any) {
+        // todo: duplication with tags input
         if (this.model instanceof Array) {
             if (this.trackBy) {
                 return !!this.model.find((i: any) => i[this.trackBy] === value[this.trackBy]);
             } else {
                 return this.model.indexOf(value) !== -1;
             }
-        } else {
+        } else if (this.model !== null && this.model !== undefined) {
             if (this.trackBy) {
                 return this.model[this.trackBy] === value[this.trackBy];
             } else {
                 return this.model === value;
             }
         }
+        
+        return false;
     }
 
     selectAll() {
@@ -146,7 +159,10 @@ export class CheckboxGroup implements ControlValueAccessor, Validator {
 @Component({
     selector: "checkbox-item",
     template: `
-<div class="checkbox-item" (click)="toggleCheck()" [class.disabled]="isDisabled()">
+<div (click)="toggleCheck()"
+     [class.disabled]="isDisabled()"
+     [class.readonly]="isReadonly()"
+     class="checkbox-item" >
     <input class="checkbox-item-input" type="checkbox" [checked]="isChecked()" [disabled]="isDisabled()"/> <ng-content></ng-content>
 </div>`,
     encapsulation: ViewEncapsulation.None,
@@ -157,6 +173,9 @@ export class CheckboxGroup implements ControlValueAccessor, Validator {
 .checkbox-item.disabled {
     cursor: not-allowed;
 }
+.checkbox-item.readonly {
+    cursor: default;
+}
 `]
 })
 export class CheckboxItem {
@@ -165,13 +184,16 @@ export class CheckboxItem {
     value: any;
 
     @Input()
-    disabled: boolean;
+    disabled: boolean = false;
+
+    @Input()
+    readonly: boolean = false;
 
     constructor(@Host() @Inject(forwardRef(() => CheckboxGroup))  private checkboxGroup: CheckboxGroup) {
     }
 
     toggleCheck() {
-        if (this.isDisabled()) return;
+        if (this.isReadonly() || this.isDisabled()) return;
         this.checkboxGroup.addOrRemoveValue(this.value);
     }
 
@@ -181,6 +203,10 @@ export class CheckboxItem {
 
     isDisabled() {
         return this.disabled === true || this.checkboxGroup.disabled;
+    }
+
+    isReadonly() {
+        return this.readonly || this.checkboxGroup.readonly;
     }
 
 }
@@ -288,6 +314,9 @@ export class CheckBox implements ControlValueAccessor, Validator {
     }
 
     private addOrRemoveValue() {
+        if (!this.model)
+            this.model = [];
+
         if (this.model instanceof Array) {
             if (this.hasModelValue()) {
                 this.model.splice(this.model.indexOf(this.value), 1);
@@ -301,6 +330,7 @@ export class CheckBox implements ControlValueAccessor, Validator {
                 this.model = this.value;
             }
         }
+        // this.writeValue(this.model);
         this.onChange(this.model);
     }
 

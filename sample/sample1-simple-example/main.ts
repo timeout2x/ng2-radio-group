@@ -1,6 +1,6 @@
 import {bootstrap} from "@angular/platform-browser-dynamic";
 import {Component} from "@angular/core";
-import {RADIO_GROUP_DIRECTIVES} from "../../src/index";
+import {SELECT_DIRECTIVES} from "../../src/index";
 import {Car} from "./Car";
 
 @Component({
@@ -127,7 +127,7 @@ import {Car} from "./Car";
     
 </div>
 `,
-    directives: [RADIO_GROUP_DIRECTIVES]
+    directives: [SELECT_DIRECTIVES]
 })
 export class Sample1App {
 

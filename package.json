@@ -1,7 +1,7 @@
 {
-  "name": "ng2-radio-group",
+  "name": "ng2-select-controls",
   "version": "0.0.6",
-  "description": "Checkbox group and radio group control for your angular2 applications using bootstrap3.",
+  "description": "Advanced select, checkbox and radio controls.",
   "license": "MIT",
   "readmeFilename": "README.md",
   "private": true,
@@ -33,6 +33,7 @@
     "@angular/core": "2.0.0-rc.2",
     "@angular/common": "^2.0.0-rc.2",
     "@angular/compiler": "^2.0.0-rc.2",
+    "@angular/http": "^2.0.0-rc.2",
     "@angular/platform-browser": "^2.0.0-rc.2",
     "@angular/platform-browser-dynamic": "^2.0.0-rc.2",
     "bootstrap": "^3.3.6",
@@ -57,5 +58,8 @@
     "typescript": "^1.8.2",
     "typings": "^0.6.6",
     "zone.js": "^0.6.12"
+  },
+  "dependencies": {
+    "ng2-dropdown": "^0.0.5"
   }
 }
