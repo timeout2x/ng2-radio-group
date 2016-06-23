@@ -6,13 +6,18 @@ import {
     ViewEncapsulation,
     ViewChild,
     ChangeDetectorRef,
-    AfterViewInit, ElementRef, ViewChildren, QueryList
+    AfterViewInit,
+    ElementRef,
+    ViewChildren,
+    QueryList
 } from "@angular/core";
-import {NG_VALIDATORS, NG_VALUE_ACCESSOR, Validator, ControlValueAccessor, Control} from "@angular/common";
+import {NG_VALIDATORS, NG_VALUE_ACCESSOR} from "@angular/common";
 import {CheckboxGroup} from "./CheckboxGroup";
 import {RadioGroup} from "./RadioGroup";
 import {RadioItem} from "./RadioItem";
 import {CheckboxItem} from "./CheckboxItem";
+import {SelectValueAccessor} from "./SelectValueAccessor";
+import {SelectValidator} from "./SelectValidator";
 
 @Component({
     selector: "select-items",
@@ -30,11 +35,12 @@ import {CheckboxItem} from "./CheckboxItem";
             <input type="checkbox" [checked]="isAllSelected(getItems())">
             <span class="select-items-label">{{ selectAllLabel }}</span>
         </div>
-        <checkbox-group #checkboxGroup [(ngModel)]="model" (ngModelChange)="onChange(model)" [trackBy]="trackBy">
+        <checkbox-group #checkboxGroup [(ngModel)]="valueAccessor.model" (ngModelChange)="changeModel($event)" [trackBy]="trackBy">
             <div *ngFor="let item of getItems(); let last = last" 
                 #itemElement
                 [class.active]="active === item"
-                [class.hide-controls]="hideControls === true"
+                [class.hide-controls]="hideControls"
+                [class.with-remove-button]="removeButton"
                 [class.selected]="checkboxItem.isChecked()"
                 class="select-items-item item">
                 <checkbox-item #checkboxItem
@@ -53,15 +59,16 @@ import {CheckboxItem} from "./CheckboxItem";
             [class.hidden]="!noSelectionLabel"
             (click)="resetModel()"
             [class.active]="active === '--no-selection'"
-            [class.selected]="!model">
-            <input type="radio" [checked]="!model">
+            [class.selected]="!valueAccessor.model">
+            <input type="radio" [checked]="!valueAccessor.model">
             <span class="select-items-label">{{ noSelectionLabel }}</span>
         </div>
-        <radio-group #radioGroup [(ngModel)]="model" (ngModelChange)="onChange(model)" [trackBy]="trackBy">
+        <radio-group #radioGroup [(ngModel)]="valueAccessor.model" (ngModelChange)="changeModel($event)" [trackBy]="trackBy">
             <div *ngFor="let item of getItems(); let last = last"
                 #itemElement
                 [class.active]="active === item"
-                [class.hide-controls]="hideControls === true"
+                [class.hide-controls]="hideControls"
+                [class.with-remove-button]="removeButton"
                 [class.selected]="radioItem.isChecked()"
                 class="select-items-item item">
                 <radio-item #radioItem
@@ -135,7 +142,6 @@ import {CheckboxItem} from "./CheckboxItem";
     height: 0;
     margin-left: 2px;
     vertical-align: middle;
-    border-top: 4px dashed;
     border-right: 4px solid transparent;
     border-left: 4px solid transparent;
 }
@@ -151,17 +157,19 @@ import {CheckboxItem} from "./CheckboxItem";
         RadioGroup, RadioItem, CheckboxGroup, CheckboxItem
     ],
     providers: [
+        SelectValueAccessor,
+        SelectValidator,
         new Provider(NG_VALUE_ACCESSOR, {
-            useExisting: forwardRef(() => SelectItems),
+            useExisting: forwardRef(() => SelectValueAccessor),
             multi: true
         }),
         new Provider(NG_VALIDATORS, {
-            useExisting: forwardRef(() => SelectItems),
+            useExisting: forwardRef(() => SelectValidator),
             multi: true
         })
     ]
 })
-export class SelectItems implements AfterViewInit, ControlValueAccessor, Validator {
+export class SelectItems implements AfterViewInit {
 
     // -------------------------------------------------------------------------
     // Inputs
@@ -254,47 +262,12 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
     itemElements: QueryList<ElementRef>;
 
     // -------------------------------------------------------------------------
-    // Private Properties
-    // -------------------------------------------------------------------------
-
-    onChange: (m: any) => void;
-    private onTouched: (m: any) => void;
-    private model: any;
-
-    // -------------------------------------------------------------------------
     // Constructor
     // -------------------------------------------------------------------------
 
-    constructor(private cdr: ChangeDetectorRef) {
-    }
-
-    // -------------------------------------------------------------------------
-    // Implemented from ControlValueAccessor
-    // -------------------------------------------------------------------------
-
-    writeValue(value: any[]): void {
-        this.model = value;
-    }
-
-    registerOnChange(fn: any): void {
-        this.onChange = fn;
-    }
-
-    registerOnTouched(fn: any): void {
-        this.onTouched = fn;
-    }
-
-    // -------------------------------------------------------------------------
-    // Implemented from Validator
-    // -------------------------------------------------------------------------
-
-    validate(c: Control): any {
-      /*  if (this.required && (!c.value || (c.value instanceof Array) && c.value.length === 0)) {
-            return {
-                required: true
-            };
-        }*/
-        return null;
+    constructor(private cdr: ChangeDetectorRef,
+                public valueAccessor: SelectValueAccessor,
+                private validator: SelectValidator) {
     }
 
     // -------------------------------------------------------------------------
@@ -308,10 +281,14 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
     // -------------------------------------------------------------------------
     // Public Methods
     // -------------------------------------------------------------------------
-    
+
+    changeModel(model: any) {
+        this.valueAccessor.set(model);
+    }
+
     isMultiple() {
         if (this.multiple === undefined)
-            return this.model instanceof Array;
+            return this.valueAccessor.model instanceof Array;
         
         return this.multiple;
     }
@@ -330,10 +307,10 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
         }
 
         if (this.isMultiple() && this.checkboxGroup) {
-            if (this.maxModelSize > 0 && this.model.length >= this.maxModelSize) {
+            if (this.maxModelSize > 0 && this.valueAccessor.model.length >= this.maxModelSize) {
                 return this.checkboxGroup.valueAccessor.has(item) ? false : true;
             }
-            if (this.minModelSize > 0 && this.model.length <= this.minModelSize) {
+            if (this.minModelSize > 0 && this.valueAccessor.model.length <= this.minModelSize) {
                 return this.checkboxGroup.valueAccessor.has(item) ? true : false;
             }
 
@@ -472,8 +449,7 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
     }
 
     resetModel() {
-        this.model = undefined;
-        this.onChange(this.model);
+        this.valueAccessor.set(undefined);
     }
 
 }

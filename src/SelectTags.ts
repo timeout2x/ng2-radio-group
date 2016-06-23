@@ -5,20 +5,23 @@ import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES} from "ng2-dropdown";
 import {Observable} from "rxjs/Rx";
 import {WidthCalculator} from "./WidthCalculator";
+import {SelectValidator} from "./SelectValidator";
+import {SelectValueAccessor} from "./SelectValueAccessor";
 
 @Component({
     selector: "select-tags",
     template: `
 <div class="select-tags">
     <div class="select-tags-dropdown dropdown" dropdown>
-        <div class="select-tags-box" (click)="selectTagsBoxInput.focus()" (focus)="selectTagsBoxInput.focus()">
+        <div class="select-tags-box" (click)="tagsBoxFocus()" (focus)="tagsBoxFocus()">
             <select-items #boxSelectItems
+                [(ngModel)]="selectedItems.length ? selectedItems : selectedItem"
                 [hideControls]="true"
                 [removeButton]="true"
-                [items]="model"
+                [items]="valueAccessor.model"
+                (onSelect)="onTagSelect()"
                 labelBy="name"
-                trackBy="name"
-                [readonly]="true"></select-items>
+                trackBy="name"></select-items>
             <input #selectTagsBoxInput 
                    class="select-tags-input"
                    dropdown-open
@@ -34,18 +37,18 @@ import {WidthCalculator} from "./WidthCalculator";
                    (blur)="recalculateInputWidth($event)"
                    (keydown.enter)="addTerm()"/>
         </div>
-        <div class="select-tags-add-button" [class.hidden]="!isMultiple() || !persist || !term || !term.length">
+        <div class="select-tags-add-button" [class.hidden]="!persist || !term || !term.length">
             <a (click)="addTerm()">{{ addButtonLabel }}</a> (or press enter)
         </div>
         <div class="select-tags-dropdown-menu dropdown-menu"
             [class.hidden]="!dropdownSelectItems.getItems().length">
             <select-items #dropdownSelectItems
-                [(ngModel)]="model" 
-                (ngModelChange)="onModelChange()"
+                [(ngModel)]="valueAccessor.model" 
+                (ngModelChange)="onModelChange($event)"
                 [items]="items"
                 [hideSelected]="true"
                 [hideControls]="true"
-                [multiple]="isMultiple()"
+                [multiple]="true"
                 [disabled]="disabled"
                 [labelBy]="labelBy"
                 [trackBy]="trackBy"
@@ -138,7 +141,33 @@ import {WidthCalculator} from "./WidthCalculator";
     display: inline;
 }
 .select-tags .select-tags-box .select-items .select-items-item .remove-button {
-    color: #FFF;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: inline-block;
+    width: 17px;
+    padding: 3px 0 0 0;
+    font-size: 12px;
+    font-weight: bold;
+    color: inherit;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    border-left: 1px solid #0073bb;
+    -webkit-border-radius: 0 2px 2px 0;
+    -moz-border-radius: 0 2px 2px 0;
+    border-radius: 0 2px 2px 0;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.select-tags .select-tags-box .select-items .select-items-item .remove-button:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+.select-tags .select-tags-box .select-items .select-items-item.with-remove-button {
+    position: relative;
+    padding-right: 24px !important;
 }
 .select-tags .select-tags-box .select-items .select-items-item {
     display: inline-block;
@@ -154,6 +183,21 @@ import {WidthCalculator} from "./WidthCalculator";
     background-repeat: repeat-x;
     text-shadow: 0 1px 0 rgba(0, 51, 83, 0.3);
     background-color: #1b9dec;
+}
+.select-tags .select-tags-box .select-items .select-items-item.selected,
+.select-tags .select-tags-box .select-items .select-items-item.selected {
+    background-color: #0085d4;
+    background-image: -moz-linear-gradient(top, #008fd8, #0075cf);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#008fd8), to(#0075cf));
+    background-image: -webkit-linear-gradient(top, #008fd8, #0075cf);
+    background-image: -o-linear-gradient(top, #008fd8, #0075cf);
+    background-image: linear-gradient(to bottom, #008fd8, #0075cf);
+    background-repeat: repeat-x;
+    border: 1px solid #00578d;
+}
+.select-tags .select-tags-box .select-items .select-items-item.selected .remove-button ,
+.select-tags .select-tags-box .select-items .select-items-item.selected .remove-button {
+    border-left-color: #00578d;
 }
 .select-tags .select-tags-dropdown-menu .select-items .no-selection,
 .select-tags .select-tags-dropdown-menu .select-items .select-all,
@@ -189,18 +233,20 @@ import {WidthCalculator} from "./WidthCalculator";
         DROPDOWN_DIRECTIVES
     ],
     providers: [
+        SelectValueAccessor,
+        SelectValidator,
         WidthCalculator,
         new Provider(NG_VALUE_ACCESSOR, {
-            useExisting: forwardRef(() => SelectTags),
+            useExisting: SelectValueAccessor,
             multi: true
         }),
         new Provider(NG_VALIDATORS, {
-            useExisting: forwardRef(() => SelectTags),
+            useExisting: SelectValidator,
             multi: true
         })
     ]
 })
-export class SelectTags implements OnInit, ControlValueAccessor, Validator {
+export class SelectTags implements OnInit {
 
     // -------------------------------------------------------------------------
     // Inputs
@@ -277,6 +323,8 @@ export class SelectTags implements OnInit, ControlValueAccessor, Validator {
     term: string;
     lastLoadTerm: string = "";
     items: any[] = [];
+    selectedItem: any;
+    selectedItems: any[] = [];
 
     @ViewChild("selectTagsBoxInput")
     selectTagsBoxInput: ElementRef;
@@ -288,51 +336,25 @@ export class SelectTags implements OnInit, ControlValueAccessor, Validator {
     // Private Properties
     // -------------------------------------------------------------------------
 
-    onChange: (m: any) => void;
-    private onTouched: (m: any) => void;
-    private model: any;
+    private cursorPosition: number = 0;
     private originalModel = false;
-    cursorPosition: number = 0;
+    private initialized: boolean = false;
 
     // -------------------------------------------------------------------------
     // Constructor
     // -------------------------------------------------------------------------
 
-    constructor(private widthCalculator: WidthCalculator) {
-    }
-
-    // -------------------------------------------------------------------------
-    // Implemented from ControlValueAccessor
-    // -------------------------------------------------------------------------
-
-    writeValue(value: any): void {
-        this.model = value;
-        if (this.model) {
-            this.originalModel = true;
-            this.term = this.getItemLabel(this.model);
-            this.recalculateInputWidth(undefined, this.term);
-        }
-    }
-
-    registerOnChange(fn: any): void {
-        this.onChange = fn;
-    }
-
-    registerOnTouched(fn: any): void {
-        this.onTouched = fn;
-    }
-
-    // -------------------------------------------------------------------------
-    // Implemented from Validator
-    // -------------------------------------------------------------------------
-
-    validate(c: Control): any {
-      /*  if (this.required && (!c.value || (c.value instanceof Array) && c.value.length === 0)) {
-            return {
-                required: true
-            };
-        }*/
-        return null;
+    constructor(private widthCalculator: WidthCalculator,
+                public valueAccessor: SelectValueAccessor,
+                private validator: SelectValidator) {
+        this.valueAccessor.modelWrites.subscribe((model: any) => {
+            if (model)
+                this.originalModel = true;
+            if (this.initialized) {
+                this.term = this.getItemLabel(model);
+                this.recalculateInputWidth(undefined, this.term);
+            }
+        });
     }
 
     // -------------------------------------------------------------------------
@@ -340,34 +362,20 @@ export class SelectTags implements OnInit, ControlValueAccessor, Validator {
     // -------------------------------------------------------------------------
 
     ngOnInit() {
+        this.initialized = true;
+        this.term = this.getItemLabel(this.valueAccessor.model);
 
         // load options on term changes
         this.termControl
             .valueChanges
             .debounceTime(this.debounceTime) // make a debounced request on term change
             .filter(term => !this.originalModel && term && term.length >= this.minQueryLength)
-            // .filter(term => !this.model || this.getItemLabel(this.model) !== term) // don't need to send request if in input there is a model already
             .subscribe(term => this.load());
 
         this.termControl
             .valueChanges
             .subscribe((term: string) => {
-                // if persist mode is set then create a new object
-                if (!this.isMultiple()) {
-                    if (this.persist && term && (!this.model || this.getItemLabel(this.model) !== term)) {
-                        this.model = this.itemConstructor ? this.itemConstructor(term) : { [this.labelBy as string]: term };
-                        this.originalModel = false;
-                        this.onChange(this.model);
-                    }
-
-                    // if term is empty then clean the model
-                    if (this.model && term === "") {
-                        this.model = undefined;
-                        this.onChange(this.model);
-                    }
-                } else {
-                    this.originalModel = false;
-                }
+                this.originalModel = false;
             });
     }
 
@@ -387,54 +395,37 @@ export class SelectTags implements OnInit, ControlValueAccessor, Validator {
             });
     }
 
-    onModelChange() {
-        this.onChange(this.model);
-        if (!this.isMultiple() && this.model) {
-            this.term = this.getItemLabel(this.model);
-            this.lastLoadTerm = this.term;
-            this.items = [];
-            this.recalculateInputWidth(undefined, this.term);
-        } else {
-            this.lastLoadTerm = "";
-            this.term = "";
-            this.recalculateInputWidth(undefined, this.term);
-            this.items = [];
-        }
+    onModelChange(model: any[]) {
+        this.cursorPosition = model.length;
+        this.valueAccessor.set(model);
+        this.lastLoadTerm = "";
+        this.term = "";
+        this.recalculateInputWidth(undefined, this.term);
+        this.items = [];
     }
 
     addTerm() {
-        if (!this.term || !this.persist || !this.isMultiple()) return;
-
-        if (!this.model)
-            this.model = [];
+        if (!this.term || !this.persist) return;
 
         const newModel = this.itemConstructor ? this.itemConstructor(this.term) : { [this.labelBy as string]: this.term };
-        this.model.push(newModel);
-        this.onChange(this.model);
+        this.valueAccessor.addAt(newModel, this.cursorPosition);
         this.cursorPosition++;
+        setTimeout(() => this.move()); // using timeout is monkey patch
         this.lastLoadTerm = "";
         this.term = "";
         this.items = [];
         this.recalculateInputWidth(undefined, this.term);
     }
 
-    isMultiple() {
-        if (this.multiple !== undefined)
-            return this.multiple;
-
-        return this.model instanceof Array;
-    }
-
     isDisabled() {
         if (this.maxModelSize > 0 &&
-            this.isMultiple() &&
-            this.model.length >= this.maxModelSize)
+            this.valueAccessor.model.length >= this.maxModelSize)
             return true;
 
         return this.disabled;
     }
 
-    getItemLabel(item: any) {// todo: duplication
+    getItemLabel(item: any) { // todo: duplication
         if (!item) return; 
         
         if (this.labelBy) {
@@ -460,19 +451,17 @@ export class SelectTags implements OnInit, ControlValueAccessor, Validator {
         if (!this.term) {
             if (event.keyCode === 37) { // left
                 this.moveLeft();
-                this.selectTagsBoxInput.nativeElement.focus();
 
             } else if (event.keyCode === 39) { // right
                 this.moveRight();
-                this.selectTagsBoxInput.nativeElement.focus();
 
-            } else if (event.keyCode === 8) { // backspace
-                // this.removeLast(); // todo remove all selected, or last one
-                // this.removeByKey
+            } else if (event.keyCode === 8 && this.removeByKey) { // backspace
+                this.valueAccessor.removeAt(this.cursorPosition - 1);
+                setTimeout(() => this.moveLeft()); // using timeout is monkey patch
 
-            } else if (event.keyCode === 46) { // delete
-                // this.removeLast(); // todo remove all selected, or next one
-                // this.removeByKey
+            } else if (event.keyCode === 46 && this.removeByKey) { // delete
+                this.valueAccessor.removeAt(this.cursorPosition);
+                setTimeout(() => this.move()); // using timeout is monkey patch
 
             } else if (event.keyCode === 65 && (event.ctrlKey || event.metaKey)) { // Ctrl/Cmd + A
                 // todo: make all selected
@@ -481,25 +470,43 @@ export class SelectTags implements OnInit, ControlValueAccessor, Validator {
     }
 
     moveLeft() {
-        const items = this.boxSelectItems.itemElements.toArray();
-        if (this.cursorPosition === 0)
-            return;
-
+        if (this.cursorPosition === 0) return;
         --this.cursorPosition;
-        const input = this.selectTagsBoxInput.nativeElement;
-        const element = items[this.cursorPosition].nativeElement;
-        element.parentElement.insertBefore(input, element);
+        this.move();
     }
 
     moveRight() {
-        const items = this.boxSelectItems.itemElements.toArray();
-        if (this.cursorPosition >= items.length)
-            return;
-
-        const input = this.selectTagsBoxInput.nativeElement;
-        const element = items[this.cursorPosition].nativeElement;
-        element.parentElement.insertBefore(input, element.nextSibling);
+        if (this.cursorPosition >= this.boxSelectItems.itemElements.toArray().length) return;
         ++this.cursorPosition;
+        this.move();
+    }
+
+    tagsBoxFocus() {
+        this.selectTagsBoxInput.nativeElement.focus();
+    }
+
+    onTagSelect() {
+        
+    }
+
+    // -------------------------------------------------------------------------
+    // Private Methods
+    // -------------------------------------------------------------------------
+
+    private move() {
+        const items = this.boxSelectItems.itemElements.toArray();
+        const input = this.selectTagsBoxInput.nativeElement;
+        if (items[this.cursorPosition]) {
+            const element = items[this.cursorPosition].nativeElement;
+            element.parentElement.insertBefore(input, element);
+        } else {
+            if (this.cursorPosition === 0 || !items[this.cursorPosition - 1])
+                return;
+
+            const element = items[this.cursorPosition - 1].nativeElement;
+            element.parentElement.insertBefore(input, element.nextSibling);
+        }
+        this.selectTagsBoxInput.nativeElement.focus();
     }
 
 }

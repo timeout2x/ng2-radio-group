@@ -4,6 +4,8 @@ import {NG_VALIDATORS, NG_VALUE_ACCESSOR, Validator, ControlValueAccessor, Contr
 import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES} from "ng2-dropdown";
 import {Observable} from "rxjs/Rx";
+import {SelectValueAccessor} from "./SelectValueAccessor";
+import {SelectValidator} from "./SelectValidator";
 
 @Component({
     selector: "autocomplete",
@@ -29,8 +31,8 @@ import {Observable} from "rxjs/Rx";
         <div class="autocomplete-dropdown-menu dropdown-menu"
             [class.hidden]="!dropdownSelectItems.getItems().length">
             <select-items #dropdownSelectItems
-                [(ngModel)]="model" 
-                (ngModelChange)="onModelChange()"
+                [(ngModel)]="valueAccessor.model" 
+                (ngModelChange)="onModelChange($event)"
                 [items]="items"
                 [hideSelected]="true"
                 [hideControls]="true"
@@ -109,17 +111,19 @@ import {Observable} from "rxjs/Rx";
         DROPDOWN_DIRECTIVES
     ],
     providers: [
+        SelectValueAccessor,
+        SelectValidator,
         new Provider(NG_VALUE_ACCESSOR, {
-            useExisting: forwardRef(() => Autocomplete),
+            useExisting: forwardRef(() => SelectValueAccessor),
             multi: true
         }),
         new Provider(NG_VALIDATORS, {
-            useExisting: forwardRef(() => Autocomplete),
+            useExisting: forwardRef(() => SelectValidator),
             multi: true
         })
     ]
 })
-export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
+export class Autocomplete implements OnInit {
 
     // -------------------------------------------------------------------------
     // Inputs
@@ -185,47 +189,25 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
     lastLoadTerm: string = "";
     items: any[] = [];
 
-
     // -------------------------------------------------------------------------
     // Private Properties
     // -------------------------------------------------------------------------
 
-    onChange: (m: any) => void;
-    private onTouched: (m: any) => void;
-    private model: any;
     private originalModel = false;
+    private initialized: boolean = false;
 
     // -------------------------------------------------------------------------
-    // Implemented from ControlValueAccessor
+    // Constructor
     // -------------------------------------------------------------------------
 
-    writeValue(value: any): void {
-        this.model = value;
-        if (this.model) {
-            this.originalModel = true;
-            this.term = this.getItemLabel(this.model);
-        }
-    }
-
-    registerOnChange(fn: any): void {
-        this.onChange = fn;
-    }
-
-    registerOnTouched(fn: any): void {
-        this.onTouched = fn;
-    }
-
-    // -------------------------------------------------------------------------
-    // Implemented from Validator
-    // -------------------------------------------------------------------------
-
-    validate(c: Control): any {
-      /*  if (this.required && (!c.value || (c.value instanceof Array) && c.value.length === 0)) {
-            return {
-                required: true
-            };
-        }*/
-        return null;
+    constructor(public valueAccessor: SelectValueAccessor,
+                private validator: SelectValidator) {
+        this.valueAccessor.modelWrites.subscribe((model: any) => {
+            if (model)
+                this.originalModel = true;
+            if (this.initialized)
+                this.term = this.getItemLabel(model);
+        });
     }
 
     // -------------------------------------------------------------------------
@@ -233,6 +215,8 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
     // -------------------------------------------------------------------------
 
     ngOnInit() {
+        this.initialized = true;
+        this.term = this.getItemLabel(this.valueAccessor.model);
 
         // load options on term changes
         this.termControl
@@ -247,16 +231,15 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
             .subscribe((term: string) => {
                 // if persist mode is set then create a new object
                 if (!this.isMultiple()) {
-                    if (this.persist && term && (!this.model || this.getItemLabel(this.model) !== term)) {
-                        this.model = this.itemConstructor ? this.itemConstructor(term) : { [this.labelBy as string]: term };
+                    if (this.persist && term && (!this.valueAccessor.model || this.getItemLabel(this.valueAccessor.model) !== term)) {
+                        const value = this.itemConstructor ? this.itemConstructor(term) : { [this.labelBy as string]: term };
+                        this.valueAccessor.set(value);
                         this.originalModel = false;
-                        this.onChange(this.model);
                     }
 
                     // if term is empty then clean the model
-                    if (this.model && term === "") {
-                        this.model = undefined;
-                        this.onChange(this.model);
+                    if (this.valueAccessor.model && term === "") {
+                        this.valueAccessor.set(undefined);
                     }
                 } else {
                     this.originalModel = false;
@@ -280,10 +263,10 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
             });
     }
 
-    onModelChange() {
-        this.onChange(this.model);
-        if (!this.isMultiple() && this.model) {
-            this.term = this.getItemLabel(this.model);
+    onModelChange(model: any) {
+        this.valueAccessor.set(model);
+        if (!this.isMultiple() && model) {
+            this.term = this.getItemLabel(model);
             this.lastLoadTerm = this.term;
             this.items = [];
         } else {
@@ -296,12 +279,11 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
     addTerm() {
         if (!this.term || !this.persist || !this.isMultiple()) return;
 
-        if (!this.model)
-            this.model = [];
+        // if (!this.valueAccessor.model)
+        //     this.valueAccessor.set([]);
 
         const newModel = this.itemConstructor ? this.itemConstructor(this.term) : { [this.labelBy as string]: this.term };
-        this.model.push(newModel);
-        this.onChange(this.model);
+        this.valueAccessor.add(newModel);
         this.lastLoadTerm = "";
         this.term = "";
         this.items = [];
@@ -311,20 +293,20 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
         if (this.multiple !== undefined)
             return this.multiple;
 
-        return this.model instanceof Array;
+        return this.valueAccessor.model instanceof Array;
     }
 
     isDisabled() {
         if (this.maxModelSize > 0 &&
             this.isMultiple() &&
-            this.model.length >= this.maxModelSize)
+            this.valueAccessor.model.length >= this.maxModelSize)
             return true;
 
         return this.disabled;
     }
 
     getItemLabel(item: any) {// todo: duplication
-        if (!item) return; 
+        if (!item) return "";
         
         if (this.labelBy) {
             if (typeof this.labelBy === "string") {

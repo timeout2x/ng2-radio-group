@@ -1,4 +1,4 @@
-import {Injectable} from "@angular/core";
+import {Injectable, EventEmitter} from "@angular/core";
 import {ControlValueAccessor} from "@angular/common";
 
 @Injectable()
@@ -8,6 +8,7 @@ export class SelectValueAccessor implements ControlValueAccessor {
     // Public Properties
     // -------------------------------------------------------------------------
 
+    modelWrites = new EventEmitter<any>();
     trackBy: string;
 
     // -------------------------------------------------------------------------
@@ -24,6 +25,7 @@ export class SelectValueAccessor implements ControlValueAccessor {
 
     writeValue(value: any): void {
         this._model = value;
+        this.modelWrites.emit(value);
     }
 
     registerOnChange(fn: any): void {
@@ -73,6 +75,22 @@ export class SelectValueAccessor implements ControlValueAccessor {
             this._model.splice(index, 1);
             this.onChange(this._model);
         }
+    }
+
+    removeAt(index: number): boolean {
+        if (!this._model || index < 0 || (index > this._model.length - 1))
+            return false;
+
+        this._model.splice(index, 1);
+        this.onChange(this._model);
+    }
+
+    addAt(value: any, index: number): boolean {
+        if (!this._model || index < 0)
+            return false;
+
+        this._model.splice(index, 0, value);
+        this.onChange(this._model);
     }
 
     addOrRemove(value: any) {
