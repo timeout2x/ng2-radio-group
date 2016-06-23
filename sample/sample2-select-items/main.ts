@@ -1,7 +1,7 @@
 import {bootstrap} from "@angular/platform-browser-dynamic";
 import {Component} from "@angular/core";
 import {SELECT_DIRECTIVES} from "../../src/index";
-import {Car} from "../sample1-simple-example/Car";
+import {Car} from "./Car";
 
 @Component({
     selector: "app",
@@ -18,65 +18,65 @@ import {Car} from "../sample1-simple-example/Car";
     <pre>{{ selectedCars | json }}</pre>
 
     <h4>Select list with search</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <select-items [(ngModel)]="selectedCars1"
                   [items]="cars"
                   labelBy="name"
                   searchBy="name"
                   searchLabel="search...">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars1 | json }}</pre>
 
     <h4>Select list with ordering</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <select-items [(ngModel)]="selectedCars2"
                   [items]="cars"
                   labelBy="name"
                   orderBy="name">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars2 | json }}</pre>
 
     <h4>Select list with descendant ordering</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <select-items [(ngModel)]="selectedCars3"
                   [items]="cars"
                   labelBy="name"
                   orderBy="name"
                   orderDirection="desc">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars3 | json }}</pre>
     
     
     <h4>Select items with select all option</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <select-items [(ngModel)]="selectedCars4"
                   [items]="cars"
                   labelBy="name"
                   selectAllLabel="select all">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars4 | json }}</pre>
     
     <h4>Select items with limited number of shown items:</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <select-items [(ngModel)]="selectedCars5"
                   [items]="cars"
                   [limit]="4"
                   labelBy="name">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars5 | json }}</pre>
     
     <h4>Select items with limited number of shown items, with more button:</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <select-items [(ngModel)]="selectedCars6"
                   [items]="cars"
                   [limit]="4"
                   labelBy="name"
                   moreLabel="more">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars6 | json }}</pre>
     
     <h4>Select items with limited number of shown items, with more & hide button:</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <select-items [(ngModel)]="selectedCars7"
                   [items]="cars"
                   [limit]="4"
                   labelBy="name"
@@ -84,52 +84,52 @@ import {Car} from "../sample1-simple-example/Car";
                   hideLabel="hide">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars7 | json }}</pre>
     
     <h4>Select items where items can be removed:</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <select-items [(ngModel)]="selectedCars8"
                   [items]="cars"
                   labelBy="name"
                   [removeButton]="true">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars8 | json }}</pre>
     
-    <h4>Select items where with no controls:</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <h4>Select items with no controls:</h4>
+    <select-items [(ngModel)]="selectedCars9"
                   [items]="cars"
                   labelBy="name"
                   [hideControls]="true">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars9 | json }}</pre>
     
     <h4>Select items where where selected items are not showing after they are selected:</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <select-items [(ngModel)]="selectedCars10"
                   [items]="cars"
                   labelBy="name"
                   [hideSelected]="true">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars10 | json }}</pre>
     
     <h4>Select items with maximal number of allowed selected items:</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <select-items [(ngModel)]="selectedCars11"
                   [items]="cars"
                   labelBy="name"
                   [maxModelSize]="3">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars11 | json }}</pre>
     
     <h4>Select items with minimal number of allowed selected items:</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <select-items [(ngModel)]="selectedCars12"
                   [items]="cars"
                   labelBy="name"
                   [minModelSize]="3">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars12 | json }}</pre>
     
     <h4>Select items with track by, to track by another model:</h4>
     <select-items [(ngModel)]="secondSelectedCars"
@@ -150,7 +150,7 @@ import {Car} from "../sample1-simple-example/Car";
     <pre>{{ selectedCarNames | json }}</pre>
     
     <h4>All-in-one select items:</h4>
-    <select-items [(ngModel)]="selectedCars"
+    <select-items [(ngModel)]="selectedCars13"
                   [items]="cars"
                   [removeButton]="true"
                   [hideControls]="false"
@@ -167,7 +167,7 @@ import {Car} from "../sample1-simple-example/Car";
                   selectAllLabel="select all">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars13 | json }}</pre>
     
     <!-- SAME WITH RADIO -->
     
@@ -361,6 +361,19 @@ export class Sample1App {
     ];
 
     selectedCars: Car[] = [];
+    selectedCars1: Car[] = [];
+    selectedCars2: Car[] = [];
+    selectedCars3: Car[] = [];
+    selectedCars4: Car[] = [];
+    selectedCars5: Car[] = [];
+    selectedCars6: Car[] = [];
+    selectedCars7: Car[] = [];
+    selectedCars8: Car[] = [];
+    selectedCars9: Car[] = [];
+    selectedCars10: Car[] = [];
+    selectedCars11: Car[] = [];
+    selectedCars12: Car[] = [];
+    selectedCars13: Car[] = [];
     secondSelectedCars: Car[] = [
         new Car(2, "Mercedes", 1999)
     ];

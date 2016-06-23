@@ -6,20 +6,22 @@ import {
     ViewEncapsulation,
     ViewChild,
     ChangeDetectorRef,
-    AfterViewInit
+    AfterViewInit, ElementRef, ViewChildren, QueryList
 } from "@angular/core";
 import {NG_VALIDATORS, NG_VALUE_ACCESSOR, Validator, ControlValueAccessor, Control} from "@angular/common";
-import {CheckboxItem, CheckboxGroup} from "./CheckboxGroup";
-import {RadioItem, RadioGroup} from "./RadioGroup";
+import {CheckboxGroup} from "./CheckboxGroup";
+import {RadioGroup} from "./RadioGroup";
+import {RadioItem} from "./RadioItem";
+import {CheckboxItem} from "./CheckboxItem";
 
 @Component({
     selector: "select-items",
     template: `
 <div class="select-items">
-    <div class="select-items-search" [class.hidden]="!searchBy">
-        <input class="form-control" type="text" [(ngModel)]="keyword" [placeholder]="searchLabel || ''">
+    <div [class.hidden]="!searchBy">
+        <input class="select-items-search" type="text" [(ngModel)]="keyword" [placeholder]="searchLabel || ''">
     </div>
-    <div *ngIf="isMultiple()">
+    <div class="select-items-multiple" *ngIf="isMultiple()">
         <div class="select-items-item select-all" 
             (click)="selectAll()" 
             [ngStyle]="{ display: ((searchBy && keyword) || !selectAllLabel || !getItems().length) ? 'none' : 'block' }"
@@ -30,6 +32,7 @@ import {RadioItem, RadioGroup} from "./RadioGroup";
         </div>
         <checkbox-group #checkboxGroup [(ngModel)]="model" (ngModelChange)="onChange(model)" [trackBy]="trackBy">
             <div *ngFor="let item of getItems(); let last = last" 
+                #itemElement
                 [class.active]="active === item"
                 [class.hide-controls]="hideControls === true"
                 [class.selected]="checkboxItem.isChecked()"
@@ -45,7 +48,7 @@ import {RadioItem, RadioGroup} from "./RadioGroup";
             </div>
         </checkbox-group>
     </div>
-    <div *ngIf="!isMultiple()">
+    <div class="select-items-single" *ngIf="!isMultiple()">
         <div class="select-items-item no-selection" 
             [class.hidden]="!noSelectionLabel"
             (click)="resetModel()"
@@ -56,6 +59,7 @@ import {RadioItem, RadioGroup} from "./RadioGroup";
         </div>
         <radio-group #radioGroup [(ngModel)]="model" (ngModelChange)="onChange(model)" [trackBy]="trackBy">
             <div *ngFor="let item of getItems(); let last = last"
+                #itemElement
                 [class.active]="active === item"
                 [class.hide-controls]="hideControls === true"
                 [class.selected]="radioItem.isChecked()"
@@ -72,22 +76,28 @@ import {RadioItem, RadioGroup} from "./RadioGroup";
     </div>
     <div class="more-button" (click)="showMore()" [class.hidden]="isMaxLimitReached || !moreLabel || isMoreShown">
         <a>{{ moreLabel }}</a>
-        <div class="caret-top"></div>
+        <div class="caret-body caret-top"></div>
     </div>
     <div class="hide-button" (click)="hideMore()" [class.hidden]="isMaxLimitReached || !hideLabel || !isMoreShown">
         <a>{{ hideLabel }}</a> 
-        <div class="caret-bottom"></div>
+        <div class="caret-body caret-bottom"></div>
     </div>
 </div>`,
     styles: [`
 .select-items .hidden {
-    display: none;
+    display: none !important;
 }
-.select-items .select-items-search {
+.select-items input.select-items-search {
+    padding: 6px 12px;
     margin-bottom: 5px;
+
 }
 .select-items .select-all, .select-items .no-selection {
     cursor: pointer;
+}
+.select-items .select-items-item.hide-controls.selected {
+    background: #337ab7;
+    color: #FFF;
 }
 .select-items .select-items-label {
     padding-left: 3px;
@@ -99,12 +109,15 @@ import {RadioItem, RadioGroup} from "./RadioGroup";
     vertical-align: text-bottom;
     cursor: pointer;
 }
-.select-items .select-items-item.hide-controls .checkbox-item input[type=checkbox], 
-.select-items .select-items-item.hide-controls .radio-item input[type=radio] {
-    display: none;
+.select-items .remove-button:hover {
+    color: #333;
 }
 .select-items .checkbox-item, .select-items .radio-item {
     display: inline;
+}
+.select-items .select-items-item.hide-controls .checkbox-item input[type=checkbox], 
+.select-items .select-items-item.hide-controls .radio-item input[type=radio] {
+    display: none;
 }
 .select-items .more-button, .select-items .hide-button {
     color: #999;
@@ -116,7 +129,7 @@ import {RadioItem, RadioGroup} from "./RadioGroup";
 .select-items .more-button a:hover, .select-items .hide-button a:hover {
     text-decoration: none;
 }
-.select-items .caret-top {
+.select-items .caret-body {
     display: inline-block;
     width: 0;
     height: 0;
@@ -127,14 +140,10 @@ import {RadioItem, RadioGroup} from "./RadioGroup";
     border-left: 4px solid transparent;
 }
 .select-items .caret-bottom {
-    display: inline-block;
-    width: 0;
-    height: 0;
-    margin-left: 2px;
-    vertical-align: middle;
     border-bottom: 4px dashed;
-    border-right: 4px solid transparent;
-    border-left: 4px solid transparent;
+}
+.select-items .caret-top {
+    border-top: 4px dashed;
 }
 `],
     encapsulation: ViewEncapsulation.None,
@@ -241,6 +250,9 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
     @ViewChild(CheckboxGroup)
     checkboxGroup: CheckboxGroup;
 
+    @ViewChildren("itemElement")
+    itemElements: QueryList<ElementRef>;
+
     // -------------------------------------------------------------------------
     // Private Properties
     // -------------------------------------------------------------------------
@@ -319,10 +331,10 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
 
         if (this.isMultiple() && this.checkboxGroup) {
             if (this.maxModelSize > 0 && this.model.length >= this.maxModelSize) {
-                return this.checkboxGroup.hasValue(item) ? false : true;
+                return this.checkboxGroup.valueAccessor.has(item) ? false : true;
             }
             if (this.minModelSize > 0 && this.model.length <= this.minModelSize) {
-                return this.checkboxGroup.hasValue(item) ? true : false;
+                return this.checkboxGroup.valueAccessor.has(item) ? true : false;
             }
 
         }
@@ -404,9 +416,9 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
 
         if (this.hideSelected && (this.checkboxGroup || this.radioGroup)) {
             if (this.isMultiple()) {
-                items = items.filter(item => !this.checkboxGroup.hasValue(item));
+                items = items.filter(item => !this.checkboxGroup.valueAccessor.has(item));
             } else {
-                items = items.filter(item => !this.radioGroup.isValue(item));
+                items = items.filter(item => !this.radioGroup.valueAccessor.has(item));
             }
         }
 
@@ -437,24 +449,23 @@ export class SelectItems implements AfterViewInit, ControlValueAccessor, Validat
     }
 
     selectAll() {
-        // const items = this.getItems();
         if (!this.isAllSelected(this.items)) {
             this.items.forEach(item => {
-                this.checkboxGroup.addValue(this.getItemValue(item));
+                this.checkboxGroup.valueAccessor.add(this.getItemValue(item));
             });
         } else {
             this.items.forEach(item => {
-                this.checkboxGroup.removeValue(this.getItemValue(item));
+                this.checkboxGroup.valueAccessor.remove(this.getItemValue(item));
             });
         }
     }
 
-    isAllSelected(items: any[]) {
+    isAllSelected(items: any[]): boolean {
         if (!this.checkboxGroup) return false;
         let has = true;
         items.forEach(item => {
             if (has)
-                has = this.checkboxGroup.hasValue(this.getItemValue(item));
+                has = this.checkboxGroup.valueAccessor.has(this.getItemValue(item));
         });
 
         return has;

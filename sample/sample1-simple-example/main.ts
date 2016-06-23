@@ -10,7 +10,7 @@ import {Car} from "./Car";
 
     <h4>Is something enabled: (non-multiple checkbox)</h4>
     <input type="checkbox" [(ngModel)]="isSomethingEnabled"/>
-    <i (click)="click()">isSomethingEnabled value:</i> <b>{{ isSomethingEnabled }}</b><br/><br/>
+    <i>isSomethingEnabled value:</i> <b>{{ isSomethingEnabled }}</b><br/><br/>
 
     <h4>Order by: (multiple check boxes)</h4>
     <input type="checkbox" [(ngModel)]="orderBy" value="rating"> Rating<br/>
@@ -112,18 +112,18 @@ import {Car} from "./Car";
     </checkbox-group>
     
     <h4>Selecting objects:</h4>
-    <checkbox-group [(ngModel)]="selectedCars">
+    <checkbox-group [(ngModel)]="selectedCars1">
         <checkbox-item *ngFor="let car of cars" [value]="car">{{ car.name }}</checkbox-item>
     </checkbox-group>
     <b>selectedCars:</b>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars1 | json }}</pre>
     
     <h4>Using track by:</h4>
-    <checkbox-group [(ngModel)]="selectedCars" trackBy="id">
+    <checkbox-group [(ngModel)]="selectedCars2" trackBy="id">
         <checkbox-item *ngFor="let car of cars" [value]="car">{{ car.name }}</checkbox-item>
     </checkbox-group>
     <b>selectedCars:</b>
-    <pre>{{ selectedCars | json }}</pre>
+    <pre>{{ selectedCars2 | json }}</pre>
     
 </div>
 `,
@@ -135,9 +135,9 @@ export class Sample1App {
     sortBy: string = "date";
     orderBy: string[] = ["rating", "comments"];
 
-    selectedCars: Car[] = [];
+    selectedCars1: Car[] = [];
+    selectedCars2: Car[] = [];
     cars: Car[];
-    anotherCars: Car[];
 
     constructor() {
         this.cars = [
@@ -145,13 +145,8 @@ export class Sample1App {
             new Car(2, "Mercedes", 1999),
             new Car(3, "Opel", 2008)
         ];
-        this.anotherCars = [
-            new Car(1, "BMW", 2000),
+        this.selectedCars2 = [
             new Car(2, "Mercedes", 1999),
-            new Car(3, "Opel", 2008)
-        ];
-        this.selectedCars = [
-            this.anotherCars[1]
         ];
     }
 

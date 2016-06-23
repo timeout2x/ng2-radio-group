@@ -1,13 +1,11 @@
-import {Component, Input, Provider, forwardRef, ViewEncapsulation, ContentChildren} from "@angular/core";
+import {Input, Host, Directive, HostBinding, Optional, HostListener, Provider, forwardRef, Inject} from "@angular/core";
 import {NG_VALUE_ACCESSOR, NG_VALIDATORS} from "@angular/common";
 import {SelectValueAccessor} from "./SelectValueAccessor";
 import {SelectValidator} from "./SelectValidator";
-import {CheckboxItem} from "./CheckboxItem";
+import {CheckboxGroup} from "./CheckboxGroup";
 
-@Component({
-    selector: "checkbox-group",
-    template: `<ng-content></ng-content>`,
-    encapsulation: ViewEncapsulation.None,
+@Directive({
+    selector: "input[type=checkbox]",
     providers: [
         SelectValueAccessor,
         SelectValidator,
@@ -19,32 +17,23 @@ import {CheckboxItem} from "./CheckboxItem";
             useExisting: SelectValidator,
             multi: true
         })
-    ]
+    ],
 })
-export class CheckboxGroup {
+export class Checkbox {
 
     // -------------------------------------------------------------------------
     // Inputs
     // -------------------------------------------------------------------------
 
     @Input()
-    disabled: boolean = false;
+    value: any = true;
 
     @Input()
-    readonly: boolean = false;
+    uncheckedValue: any = false;
 
     // -------------------------------------------------------------------------
     // Input accessors
     // -------------------------------------------------------------------------
-
-    @Input()
-    set trackBy(trackBy: string) {
-        this.valueAccessor.trackBy = trackBy;
-    }
-
-    get trackBy() {
-        return this.valueAccessor.trackBy;
-    }
 
     @Input()
     set required(required: boolean) {
@@ -54,28 +43,38 @@ export class CheckboxGroup {
     get required() {
         return this.validator.options.required;
     }
-    
-    // -------------------------------------------------------------------------
-    // Public Properties
-    // -------------------------------------------------------------------------
-
-    @ContentChildren(forwardRef(() => CheckboxItem))
-    checkboxItems: CheckboxItem[];
 
     // -------------------------------------------------------------------------
     // Constructor
     // -------------------------------------------------------------------------
 
-    constructor(public valueAccessor: SelectValueAccessor,
-                private validator: SelectValidator) {
+    constructor(@Optional() @Host() @Inject(forwardRef(() => CheckboxGroup)) private checkboxGroup: CheckboxGroup,
+                private validator: SelectValidator,
+                private valueAccessor: SelectValueAccessor) {
     }
+
     // -------------------------------------------------------------------------
-    // Public Methods
+    // Bindings
     // -------------------------------------------------------------------------
-    
-    get values() {
-        if (!this.checkboxItems) return [];
-        return this.checkboxItems.map(checkboxItem => checkboxItem.value);
+
+    @HostBinding("checked")
+    get checked() {
+        const valueAccessor = this.checkboxGroup ? this.checkboxGroup.valueAccessor : this.valueAccessor;
+        return valueAccessor.has(this.value);
+    }
+
+    @HostListener("click")
+    check() {
+        const valueAccessor = this.checkboxGroup ? this.checkboxGroup.valueAccessor : this.valueAccessor;
+        if (valueAccessor.model instanceof Array) {
+            valueAccessor.addOrRemove(this.value);
+        } else {
+            if (valueAccessor.has(this.value)) {
+                valueAccessor.set(this.uncheckedValue);
+            } else {
+                valueAccessor.set(this.value);
+            }
+        }
     }
 
 }

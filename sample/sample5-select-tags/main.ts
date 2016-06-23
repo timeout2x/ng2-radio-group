@@ -8,159 +8,151 @@ import {HTTP_PROVIDERS, Http} from "@angular/http";
     selector: "app",
     template: `
 <div class="container">
-    
-        <h4>Autocomplete multiple:</h4>
-        <autocomplete [(ngModel)]="selectedCars1" 
-                    [loader]="loader"
-                    labelBy="name"
-                    trackBy="name"></autocomplete>
 
-        <h4>Selected items:</h4>
-        <select-items
-                  [hideControls]="true"
-                  [removeButton]="true"
-                  [items]="selectedCars1"
-                  labelBy="name"
-                  trackBy="name"
-                  [readonly]="true"></select-items>
-                    
-        <br/><b>model: </b>
-        <pre>{{ selectedCars1 | json }}</pre>
-    
-        <h4>Autocomplete multiple with persist and custom button label</h4>
-        <autocomplete [(ngModel)]="selectedCars2" 
+    <h4>Select Tags multiple:</h4>
+    <select-tags [(ngModel)]="selectedCars1" 
+                [loader]="loader"
+                [persist]="true"
+                labelBy="name"
+                trackBy="name"></select-tags>
+                
+    <br/><b>model: </b>
+    <pre>{{ selectedCars1 | json }}</pre>
+    <!--
+        <h4>Select Tags multiple with persist and custom button label</h4>
+        <select-tags [(ngModel)]="selectedCars2" 
                     [loader]="loader"
                     [persist]="true"
                     addButtonLabel="add"
                     labelBy="name"
-                    trackBy="name"></autocomplete>
+                    trackBy="name"></select-tags>
                     
         <b>model: </b>
         <pre>{{ selectedCars2 | json }}</pre>
     
-        <h4>Autocomplete single:</h4>
-        <autocomplete [(ngModel)]="selectedCar1" 
+        <h4>Select Tags single:</h4>
+        <select-tags [(ngModel)]="selectedCar1" 
                     [loader]="loader"
                     labelBy="name"
-                    trackBy="name"></autocomplete>
+                    trackBy="name"></select-tags>
                     
         <b>model: </b>
         <pre>{{ selectedCar1 | json }}</pre>
     
-        <h4>Autocomplete single with persist:</h4>
-        <autocomplete [(ngModel)]="selectedCar2" 
+        <h4>Select Tags single with persist:</h4>
+        <select-tags [(ngModel)]="selectedCar2" 
                       [loader]="loader"
                       [persist]="true"
                       labelBy="name"
-                      trackBy="name"></autocomplete>
+                      trackBy="name"></select-tags>
                     
         <b>model: </b>
         <pre>{{ selectedCar2 | json }}</pre>
     
-        <h4>Autocomplete with predefined model:</h4>
-        <autocomplete [(ngModel)]="newSelectedCar" 
+        <h4>Select Tags with predefined model:</h4>
+        <select-tags [(ngModel)]="newSelectedCar" 
                     [loader]="loader"
                     [persist]="true"
                     labelBy="name"
-                    trackBy="name"></autocomplete>
+                    trackBy="name"></select-tags>
                     
         <b>model: </b>
         <pre>{{ newSelectedCar | json }}</pre>
         <button (click)="resetModel()">reset model</button>
     
-        <h4>Autocomplete multiple disabled:</h4>
-        <autocomplete [(ngModel)]="selectedCars3" 
+        <h4>Select Tags multiple disabled:</h4>
+        <select-tags [(ngModel)]="selectedCars3" 
                     [loader]="loader"
                     [persist]="true"
                     [disabled]="true"
                     labelBy="name"
-                    trackBy="name"></autocomplete>
+                    trackBy="name"></select-tags>
                     
         <b>model: </b>
         <pre>{{ selectedCars3 | json }}</pre>
     
-        <h4>Autocomplete explicit multiple:</h4>
-        <autocomplete [(ngModel)]="allSelectedCars" 
+        <h4>Select Tags explicit multiple:</h4>
+        <select-tags [(ngModel)]="allSelectedCars" 
                     [loader]="loader"
                     [persist]="true"
                     [multiple]="true"
                     labelBy="name"
-                    trackBy="name"></autocomplete>
+                    trackBy="name"></select-tags>
                     
         <b>model: </b>
         <pre>{{ allSelectedCars | json }}</pre>
     
-        <h4>Autocomplete with minimal number of characters to send a request:</h4>
-        <autocomplete [(ngModel)]="selectedCars4" 
+        <h4>Select Tags with minimal number of characters to send a request:</h4>
+        <select-tags [(ngModel)]="selectedCars4" 
                     [loader]="loader"
                     [minQueryLength]="1"
                     labelBy="name"
-                    trackBy="name"></autocomplete>
+                    trackBy="name"></select-tags>
                     
         <b>model: </b>
         <pre>{{ selectedCars4 | json }}</pre>
     
-        <h4>Autocomplete with specific values selected:</h4>
-        <autocomplete [(ngModel)]="selectedCars5" 
+        <h4>Select Tags with specific values selected:</h4>
+        <select-tags [(ngModel)]="selectedCars5" 
                     [loader]="loader"
                     labelBy="name"
                     trackBy="name"
-                    valueBy="name"></autocomplete>
+                    valueBy="name"></select-tags>
                     
         <b>model: </b>
         <pre>{{ selectedCars5 | json }}</pre>
     
-        <h4>Autocomplete with ordering enabled:</h4>
-        <autocomplete [(ngModel)]="selectedCars6" 
+        <h4>Select Tags with ordering enabled:</h4>
+        <select-tags [(ngModel)]="selectedCars6" 
                     [loader]="loader"
                     labelBy="name"
                     trackBy="name"
-                    orderBy="name"></autocomplete>
+                    orderBy="name"></select-tags>
                     
         <b>model: </b>
         <pre>{{ selectedCars6 | json }}</pre>
     
-        <h4>Autocomplete with descendant ordering enabled:</h4>
-        <autocomplete [(ngModel)]="selectedCars7" 
+        <h4>Select Tags with descendant ordering enabled:</h4>
+        <select-tags [(ngModel)]="selectedCars7" 
                     [loader]="loader"
                     labelBy="name"
                     trackBy="name"
                     orderBy="name"
-                    orderDirection="desc"></autocomplete>
+                    orderDirection="desc"></select-tags>
                     
         <b>model: </b>
         <pre>{{ selectedCars7 | json }}</pre>
     
-        <h4>Autocomplete with limit:</h4>
-        <autocomplete [(ngModel)]="selectedCars8" 
+        <h4>Select Tags with limit:</h4>
+        <select-tags [(ngModel)]="selectedCars8" 
                     [loader]="loader"
                     labelBy="name"
                     trackBy="name"
-                    [limit]="2"></autocomplete>
+                    [limit]="2"></select-tags>
                     
         <b>model: </b>
         <pre>{{ selectedCars8 | json }}</pre>
     
-        <h4>Autocomplete with maximal allowed to selection:</h4>
-        <autocomplete [(ngModel)]="selectedCars9" 
+        <h4>Select Tags with maximal allowed to selection:</h4>
+        <select-tags [(ngModel)]="selectedCars9" 
                     [loader]="loader"
                     labelBy="name"
                     trackBy="name"
-                    [maxModelSize]="2"></autocomplete>
+                    [maxModelSize]="2"></select-tags>
                     
         <b>model: </b>
         <pre>{{ selectedCars9 | json }}</pre>
     
-        <h4>Autocomplete with custom item constructor function:</h4>
-        <autocomplete [(ngModel)]="selectedCars10" 
+        <h4>Select Tags with custom item constructor function:</h4>
+        <select-tags [(ngModel)]="selectedCars10" 
                     [loader]="loader"
                     labelBy="name"
                     trackBy="name"
                     [persist]="true"
-                    [itemConstructor]="itemConstructor"></autocomplete>
+                    [itemConstructor]="itemConstructor"></select-tags>
                     
         <b>model: </b>
-        <pre>{{ selectedCars10 | json }}</pre>
+        <pre>{{ selectedCars10 | json }}</pre>-->
         
 </div>
 `,

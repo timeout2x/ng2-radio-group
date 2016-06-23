@@ -2,7 +2,7 @@
 <head>
     <meta>
     <meta charset="UTF-8"/>
-    <title>ng2-radio-group</title>
+    <title>checkbox and radio groups</title>
     <link rel="stylesheet" href="../../node_modules/bootstrap/dist/css/bootstrap.css">
 
     <script src="../../node_modules/es6-shim/es6-shim.min.js"></script>
@@ -16,11 +16,13 @@
             defaultJSExtensions: true,
             map: {
                 "@angular": "node_modules/@angular",
+                "ng2-dropdown": "node_modules/ng2-dropdown", // don't forget about this
                 "rxjs": "node_modules/rxjs"
             },
             packages: {
                 "app": { main: "main", defaultExtension: "ts" },
                 "rxjs": { defaultExtension: "js" },
+                "ng2-dropdown": { main: "index.js", defaultExtension: "js" }, // don't forget about this
                 "@angular/common": { main: "index.js", defaultExtension: "js" },
                 "@angular/compiler": { main: "index.js", defaultExtension: "js" },
                 "@angular/core": { main: "index.js", defaultExtension: "js" },

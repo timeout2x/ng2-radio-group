@@ -1,7 +1,7 @@
 import {bootstrap} from "@angular/platform-browser-dynamic";
 import {Component} from "@angular/core";
 import {SELECT_DIRECTIVES} from "../../src/index";
-import {Car} from "../sample1-simple-example/Car";
+import {Car} from "./Car";
 import {HTTP_PROVIDERS, Http} from "@angular/http";
 
 @Component({

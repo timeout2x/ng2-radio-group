@@ -9,10 +9,10 @@ import {Observable} from "rxjs/Rx";
     selector: "select-dropdown",
     template: `
 <div class="select-dropdown">
-    <div class="dropdown" dropdown>
+    <div class="select-dropdown-dropdown dropdown" dropdown>
         <div class="select-dropdown-box" tabindex="1" dropdown-open>
             <div *ngIf="isMultiple()">
-                <span [hidden]="listSelectItems.getItems().length > 0">
+                <span [class.hidden]="listSelectItems.getItems().length > 0">
                     <span class="no-selection" [class.readonly]="readonly" [class.disabled]="disabled">{{ readonly ? (readonlyLabel || label) : label }}</span>
                 </span>
                 <select-items #listSelectItems
@@ -24,17 +24,17 @@ import {Observable} from "rxjs/Rx";
                       [readonly]="true"></select-items>
             </div>
             <div *ngIf="!isMultiple()">
-                <span [hidden]="model">
+                <span [class.hidden]="model">
                     <span class="no-selection" [class.readonly]="readonly" [class.disabled]="disabled">{{ readonly ? (readonlyLabel || label) : label }}</span>
                 </span>
-                <span [hidden]="!model">
+                <span [class.hidden]="!model">
                     <span class="single-selected" [class.readonly]="readonly" [class.disabled]="disabled">{{ getItemLabel(model) }}</span>
                 </span>
             </div>
             <div style="clear: left"></div>
         </div>
         <div dropdown-not-closable-zone>
-            <div class="dropdown-menu"
+            <div class="select-dropdown-dropdown-menu dropdown-menu"
                 [class.hidden]="readonly || disabled || (!dropdownSelectItems.getItems().length && !searchBy)">
                 <select-items #dropdownSelectItems
                     [(ngModel)]="model" 
@@ -63,7 +63,7 @@ import {Observable} from "rxjs/Rx";
 </div>`,
     styles: [`
 .select-dropdown .hidden {
-    display: none;
+    display: none !important;
 }
 .select-dropdown .select-dropdown-box {
     outline: none;
@@ -73,6 +73,28 @@ import {Observable} from "rxjs/Rx";
 }
 .select-dropdown .btn-plus {
     border-left: none;
+}
+.select-dropdown .select-dropdown-dropdown {
+    position: relative;
+}
+.select-dropdown .select-dropdown-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, .15);
 }
 .select-dropdown .dropdown.open .dropdown-menu {
     display: block;
@@ -93,6 +115,7 @@ import {Observable} from "rxjs/Rx";
 .select-dropdown .select-dropdown-box .no-selection.disabled {
     color: #CCC;
     border-bottom: 1px dashed #CCC;
+    cursor: not-allowed;
 }
 .select-dropdown .select-dropdown-box .single-selected.readonly, 
 .select-dropdown .select-dropdown-box .no-selection.readonly {
@@ -106,33 +129,33 @@ import {Observable} from "rxjs/Rx";
 .select-dropdown .select-dropdown-box .select-items .select-items-item .separator:before {
     content: ",";
 }
-.select-dropdown .dropdown-menu .select-items .no-selection,
-.select-dropdown .dropdown-menu .select-items .select-all,
-.select-dropdown .dropdown-menu .select-items .checkbox-item,
-.select-dropdown .dropdown-menu .select-items .radio-item {
-    padding: 3px 15px;
+.select-dropdown .select-dropdown-dropdown-menu .select-items .no-selection,
+.select-dropdown .select-dropdown-dropdown-menu .select-items .select-all,
+.select-dropdown .select-dropdown-dropdown-menu .select-items .checkbox-item,
+.select-dropdown .select-dropdown-dropdown-menu .select-items .radio-item {
+    padding: 3px 10px;
     clear: both;
     font-weight: normal;
     line-height: 1.42857;
     white-space: nowrap;
     display: block;
 }
-.select-dropdown .dropdown-menu .select-items .no-selection:hover,
-.select-dropdown .dropdown-menu .select-items .select-all:hover,
-.select-dropdown .dropdown-menu .select-items .checkbox-item:hover,
-.select-dropdown .dropdown-menu .select-items .radio-item:hover {
+.select-dropdown .select-dropdown-dropdown-menu .select-items .no-selection:hover,
+.select-dropdown .select-dropdown-dropdown-menu .select-items .select-all:hover,
+.select-dropdown .select-dropdown-dropdown-menu .select-items .checkbox-item:hover,
+.select-dropdown .select-dropdown-dropdown-menu .select-items .radio-item:hover {
     text-decoration: none;
     color: #fff;
     background-color: #0095cc;
     cursor: pointer;
 }
-.select-dropdown .dropdown-menu .select-items .checkbox-item.disabled:hover,
-.select-dropdown .dropdown-menu .select-items .radio-item.disabled:hover {
+.select-dropdown .select-dropdown-dropdown-menu .select-items .checkbox-item.disabled:hover,
+.select-dropdown .select-dropdown-dropdown-menu .select-items .radio-item.disabled:hover {
     color: #333;
     background-color: #eeeeee;
     cursor: not-allowed;
 }
-.select-dropdown .dropdown-menu .select-items .select-items-search {
+.select-dropdown .select-dropdown-dropdown-menu .select-items .select-items-search {
     margin: 0 5px 5px 5px;
 }
 `],

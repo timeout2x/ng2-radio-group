@@ -1,17 +1,27 @@
 import "rxjs/Rx";
-import {Component, Input, forwardRef, Provider, ViewEncapsulation, OnInit, ViewChild} from "@angular/core";
+import {Component, Input, forwardRef, Provider, ViewEncapsulation, OnInit, ViewChild, ElementRef} from "@angular/core";
 import {NG_VALIDATORS, NG_VALUE_ACCESSOR, Validator, ControlValueAccessor, Control} from "@angular/common";
 import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES} from "ng2-dropdown";
 import {Observable} from "rxjs/Rx";
+import {WidthCalculator} from "./WidthCalculator";
 
 @Component({
-    selector: "autocomplete",
+    selector: "select-tags",
     template: `
-<div class="autocomplete">
-    <div class="autocomplete-dropdown dropdown" dropdown>
-        <div class="autocomplete-input" [class.autocomplete-input-group]="isMultiple() && persist">
-            <input dropdown-open
+<div class="select-tags">
+    <div class="select-tags-dropdown dropdown" dropdown>
+        <div class="select-tags-box" (click)="selectTagsBoxInput.focus()" (focus)="selectTagsBoxInput.focus()">
+            <select-items #boxSelectItems
+                [hideControls]="true"
+                [removeButton]="true"
+                [items]="model"
+                labelBy="name"
+                trackBy="name"
+                [readonly]="true"></select-items>
+            <input #selectTagsBoxInput 
+                   class="select-tags-input"
+                   dropdown-open
                    type="text"
                    [placeholder]="placeholder"
                    [disabled]="isDisabled()"
@@ -19,14 +29,15 @@ import {Observable} from "rxjs/Rx";
                    [ngFormControl]="termControl"
                    (focus)="load()"
                    (click)="load()"
+                   (keydown)="onInputKeydown($event)"
+                   (keyup)="recalculateInputWidth($event)"
+                   (blur)="recalculateInputWidth($event)"
                    (keydown.enter)="addTerm()"/>
-               <span class="autocomplete-add-button" [class.hidden]="!isMultiple() || !persist">
-                    <button (click)="addTerm()" [disabled]="disabled" type="button">
-                        {{ addButtonLabel }}
-                    </button>
-              </span>
         </div>
-        <div class="autocomplete-dropdown-menu dropdown-menu"
+        <div class="select-tags-add-button" [class.hidden]="!isMultiple() || !persist || !term || !term.length">
+            <a (click)="addTerm()">{{ addButtonLabel }}</a> (or press enter)
+        </div>
+        <div class="select-tags-dropdown-menu dropdown-menu"
             [class.hidden]="!dropdownSelectItems.getItems().length">
             <select-items #dropdownSelectItems
                 [(ngModel)]="model" 
@@ -47,14 +58,54 @@ import {Observable} from "rxjs/Rx";
     </div>
 </div>`,
     styles: [`
-.autocomplete .hidden {
+.select-tags {
+}
+.select-tags-add-button.hidden,
+.select-tags .hidden {
     display: none !important;
 }
-.autocomplete .autocomplete-dropdown {
+.select-tags-add-button {
+    float: right;
+    font-size: 0.75em;
+    color: #999;
+}
+.select-tags-add-button a {
+    border-bottom: 1px dotted;
+}
+.select-tags .select-tags-dropdown .select-tags-input {
+    border: none;
+    outline: none;
+    box-shadow: none;
+    height: 25px;
+    width: 4px;
+    display: inline-block;
+}
+.select-tags .select-tags-dropdown {
     position: relative;
 }
-.autocomplete .autocomplete-dropdown-menu {
+.select-tags .select-tags-dropdown-menu {
     position: absolute;
+    /* position: relative; */
+    top: 100%;
+    width: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    /* float: left; */
+    margin: 2px 0px 2px -1px;
+    min-width: 160px;
+    /* padding: 5px 10px 5px 0px; */
+    /* margin: 5px 0 0 -6px; */
+    padding: 5px 0 5px 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, .15);   
+    /*position: absolute;
     top: 100%;
     left: 0;
     z-index: 1000;
@@ -70,15 +121,44 @@ import {Observable} from "rxjs/Rx";
     -webkit-background-clip: padding-box;
     background-clip: padding-box;
     border: 1px solid #ccc;
-    border: 1px solid rgba(0, 0, 0, .15);
+    border: 1px solid rgba(0, 0, 0, .15);*/
 }
-.autocomplete .autocomplete-dropdown.open .dropdown-menu {
+.select-tags .select-tags-dropdown.open .dropdown-menu {
     display: block;
 }
-.autocomplete .autocomplete-dropdown-menu .select-items .no-selection,
-.autocomplete .autocomplete-dropdown-menu .select-items .select-all,
-.autocomplete .autocomplete-dropdown-menu .select-items .checkbox-item,
-.autocomplete .autocomplete-dropdown-menu .select-items .radio-item {
+.select-tags .select-tags-box {
+    padding: 5px 5px 3px 5px;
+    outline: 1px solid #CCC;
+}
+.select-tags .select-tags-box .select-items,
+.select-tags .select-tags-box .select-items .select-items-multiple,
+.select-tags .select-tags-box .select-items .select-items-single,
+.select-tags .select-tags-box .select-items .radio-group,
+.select-tags .select-tags-box .select-items .checkbox-group {
+    display: inline;
+}
+.select-tags .select-tags-box .select-items .select-items-item .remove-button {
+    color: #FFF;
+}
+.select-tags .select-tags-box .select-items .select-items-item {
+    display: inline-block;
+    padding: 2px 6px;
+    margin: 0 3px 3px 0;
+    color: #ffffff;
+    cursor: pointer;
+    background: #1da7ee;
+    border: 1px solid #0073bb;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), inset 0 1px rgba(255, 255, 255, 0.03);
+    border-radius: 3px;
+    background-image: linear-gradient(to bottom, #1da7ee, #178ee9);
+    background-repeat: repeat-x;
+    text-shadow: 0 1px 0 rgba(0, 51, 83, 0.3);
+    background-color: #1b9dec;
+}
+.select-tags .select-tags-dropdown-menu .select-items .no-selection,
+.select-tags .select-tags-dropdown-menu .select-items .select-all,
+.select-tags .select-tags-dropdown-menu .select-items .checkbox-item,
+.select-tags .select-tags-dropdown-menu .select-items .radio-item {
     padding: 3px 15px;
     clear: both;
     font-weight: normal;
@@ -87,17 +167,17 @@ import {Observable} from "rxjs/Rx";
     white-space: nowrap;
     display: block;
 }
-.autocomplete .autocomplete-dropdown-menu .select-items .no-selection:hover,
-.autocomplete .autocomplete-dropdown-menu .select-items .select-all:hover,
-.autocomplete .autocomplete-dropdown-menu .select-items .checkbox-item:hover,
-.autocomplete .autocomplete-dropdown-menu .select-items .radio-item:hover {
+.select-tags .select-tags-dropdown-menu .select-items .no-selection:hover,
+.select-tags .select-tags-dropdown-menu .select-items .select-all:hover,
+.select-tags .select-tags-dropdown-menu .select-items .checkbox-item:hover,
+.select-tags .select-tags-dropdown-menu .select-items .radio-item:hover {
     text-decoration: none;
     color: #fff;
     background-color: #0095cc;
     cursor: pointer;
 }
-.autocomplete .select-items .checkbox-item.disabled:hover,
-.autocomplete .select-items .radio-item.disabled:hover {
+.select-tags .select-items .checkbox-item.disabled:hover,
+.select-tags .select-items .radio-item.disabled:hover {
     color: #333;
     background-color: #eeeeee;
     cursor: not-allowed;
@@ -109,17 +189,18 @@ import {Observable} from "rxjs/Rx";
         DROPDOWN_DIRECTIVES
     ],
     providers: [
+        WidthCalculator,
         new Provider(NG_VALUE_ACCESSOR, {
-            useExisting: forwardRef(() => Autocomplete),
+            useExisting: forwardRef(() => SelectTags),
             multi: true
         }),
         new Provider(NG_VALIDATORS, {
-            useExisting: forwardRef(() => Autocomplete),
+            useExisting: forwardRef(() => SelectTags),
             multi: true
         })
     ]
 })
-export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
+export class SelectTags implements OnInit, ControlValueAccessor, Validator {
 
     // -------------------------------------------------------------------------
     // Inputs
@@ -174,7 +255,19 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
     itemConstructor: ((term: string) => any);
 
     @Input()
-    addButtonLabel: string = "+";
+    addButtonLabel: string = "add";
+
+    @Input()
+    removeByKey: boolean = true; // todo
+
+    @Input()
+    unqiue: boolean = true; // todo
+
+    @Input()
+    minLength: boolean = true; // todo
+
+    @Input()
+    maxLength: boolean = true; // todo
 
     // -------------------------------------------------------------------------
     // Public Properties
@@ -185,6 +278,11 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
     lastLoadTerm: string = "";
     items: any[] = [];
 
+    @ViewChild("selectTagsBoxInput")
+    selectTagsBoxInput: ElementRef;
+
+    @ViewChild("boxSelectItems")
+    boxSelectItems: SelectItems;
 
     // -------------------------------------------------------------------------
     // Private Properties
@@ -194,6 +292,14 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
     private onTouched: (m: any) => void;
     private model: any;
     private originalModel = false;
+    cursorPosition: number = 0;
+
+    // -------------------------------------------------------------------------
+    // Constructor
+    // -------------------------------------------------------------------------
+
+    constructor(private widthCalculator: WidthCalculator) {
+    }
 
     // -------------------------------------------------------------------------
     // Implemented from ControlValueAccessor
@@ -204,6 +310,7 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
         if (this.model) {
             this.originalModel = true;
             this.term = this.getItemLabel(this.model);
+            this.recalculateInputWidth(undefined, this.term);
         }
     }
 
@@ -286,9 +393,11 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
             this.term = this.getItemLabel(this.model);
             this.lastLoadTerm = this.term;
             this.items = [];
+            this.recalculateInputWidth(undefined, this.term);
         } else {
             this.lastLoadTerm = "";
             this.term = "";
+            this.recalculateInputWidth(undefined, this.term);
             this.items = [];
         }
     }
@@ -302,9 +411,11 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
         const newModel = this.itemConstructor ? this.itemConstructor(this.term) : { [this.labelBy as string]: this.term };
         this.model.push(newModel);
         this.onChange(this.model);
+        this.cursorPosition++;
         this.lastLoadTerm = "";
         this.term = "";
         this.items = [];
+        this.recalculateInputWidth(undefined, this.term);
     }
 
     isMultiple() {
@@ -338,5 +449,57 @@ export class Autocomplete implements OnInit, ControlValueAccessor, Validator {
         return item;
     }
 
+    recalculateInputWidth(event?: Event, value?: any) {
+        this.widthCalculator.recalculateInputWidth(this.selectTagsBoxInput.nativeElement, event, value);
+    }
+
+    onInputKeydown(event: KeyboardEvent) {
+        this.recalculateInputWidth(event);
+
+        // actions with tags can be done when focus inside, but no text in the input box
+        if (!this.term) {
+            if (event.keyCode === 37) { // left
+                this.moveLeft();
+                this.selectTagsBoxInput.nativeElement.focus();
+
+            } else if (event.keyCode === 39) { // right
+                this.moveRight();
+                this.selectTagsBoxInput.nativeElement.focus();
+
+            } else if (event.keyCode === 8) { // backspace
+                // this.removeLast(); // todo remove all selected, or last one
+                // this.removeByKey
+
+            } else if (event.keyCode === 46) { // delete
+                // this.removeLast(); // todo remove all selected, or next one
+                // this.removeByKey
+
+            } else if (event.keyCode === 65 && (event.ctrlKey || event.metaKey)) { // Ctrl/Cmd + A
+                // todo: make all selected
+            }
+        }
+    }
+
+    moveLeft() {
+        const items = this.boxSelectItems.itemElements.toArray();
+        if (this.cursorPosition === 0)
+            return;
+
+        --this.cursorPosition;
+        const input = this.selectTagsBoxInput.nativeElement;
+        const element = items[this.cursorPosition].nativeElement;
+        element.parentElement.insertBefore(input, element);
+    }
+
+    moveRight() {
+        const items = this.boxSelectItems.itemElements.toArray();
+        if (this.cursorPosition >= items.length)
+            return;
+
+        const input = this.selectTagsBoxInput.nativeElement;
+        const element = items[this.cursorPosition].nativeElement;
+        element.parentElement.insertBefore(input, element.nextSibling);
+        ++this.cursorPosition;
+    }
 
 }
