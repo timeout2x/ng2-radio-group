@@ -13,13 +13,14 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
     template: `
 <div class="select-tags">
     <div class="select-tags-dropdown dropdown" dropdown>
-        <div class="select-tags-box" (click)="tagsBoxFocus()" (focus)="tagsBoxFocus()">
+        <div tabindex="1" class="select-tags-box" (click)="tagsBoxFocus()" (keydown)="onSelectTagsBoxKeydown($event)">
             <select-items #boxSelectItems
-                [(ngModel)]="selectedItems.length ? selectedItems : selectedItem"
+                [(ngModel)]="selectedItems"
                 [hideControls]="true"
                 [removeButton]="true"
                 [items]="valueAccessor.model"
-                (onSelect)="onTagSelect()"
+                (onSelect)="onTagSelect($event)"
+                [customToggleLogic]="selectItemsToggleLogic"
                 labelBy="name"
                 trackBy="name"></select-items>
             <input #selectTagsBoxInput 
@@ -183,6 +184,11 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
     background-repeat: repeat-x;
     text-shadow: 0 1px 0 rgba(0, 51, 83, 0.3);
     background-color: #1b9dec;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 .select-tags .select-tags-box .select-items .select-items-item.selected,
 .select-tags .select-tags-box .select-items .select-items-item.selected {
@@ -323,7 +329,6 @@ export class SelectTags implements OnInit {
     term: string;
     lastLoadTerm: string = "";
     items: any[] = [];
-    selectedItem: any;
     selectedItems: any[] = [];
 
     @ViewChild("selectTagsBoxInput")
@@ -331,6 +336,15 @@ export class SelectTags implements OnInit {
 
     @ViewChild("boxSelectItems")
     boxSelectItems: SelectItems;
+
+    selectItemsToggleLogic = (options: { event: MouseEvent, valueAccessor: SelectValueAccessor, value: any }) => {
+        if (options.event.metaKey || options.event.shiftKey || options.event.ctrlKey) {
+            options.valueAccessor.addOrRemove(options.value);
+        } else {
+            options.valueAccessor.clear();
+            options.valueAccessor.add(options.value);
+        }
+    };
 
     // -------------------------------------------------------------------------
     // Private Properties
@@ -463,8 +477,6 @@ export class SelectTags implements OnInit {
                 this.valueAccessor.removeAt(this.cursorPosition);
                 setTimeout(() => this.move()); // using timeout is monkey patch
 
-            } else if (event.keyCode === 65 && (event.ctrlKey || event.metaKey)) { // Ctrl/Cmd + A
-                // todo: make all selected
             }
         }
     }
@@ -482,11 +494,44 @@ export class SelectTags implements OnInit {
     }
 
     tagsBoxFocus() {
+        this.selectedItems = [];
         this.selectTagsBoxInput.nativeElement.focus();
     }
 
-    onTagSelect() {
+    onSelectTagsBoxKeydown(event: KeyboardEvent) {
+        if (this.term) {
+            this.tagsBoxFocus();
+            return;
+        }
         
+        if (event.keyCode === 8 && this.removeByKey && this.selectedItems.length) { // backspace
+            this.valueAccessor.removeMany(this.selectedItems);
+            this.cursorPosition = this.valueAccessor.model.length;
+            this.selectedItems = [];
+            event.preventDefault();
+            event.stopPropagation();
+
+        } else if (event.keyCode === 46 && this.removeByKey && this.selectedItems.length) { // delete
+            this.valueAccessor.removeMany(this.selectedItems);
+            this.cursorPosition = this.valueAccessor.model.length;
+            this.selectedItems = [];
+            event.preventDefault();
+            event.stopPropagation();
+
+        } else if (event.keyCode === 27) { // esc
+            this.selectedItems = [];
+
+        } else if (event.keyCode === 65 && (event.metaKey || event.ctrlKey)) { // ctrl + A
+            this.selectedItems = this.valueAccessor.model.map((i: any) => i);
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+    }
+
+    onTagSelect(event: { event: MouseEvent }) {
+        event.event.preventDefault();
+        event.event.stopPropagation();
     }
 
     // -------------------------------------------------------------------------

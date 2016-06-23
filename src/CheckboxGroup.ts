@@ -33,6 +33,9 @@ export class CheckboxGroup {
     @Input()
     readonly: boolean = false;
 
+    @Input()
+    customToggleLogic: (options: { event: MouseEvent, valueAccessor: SelectValueAccessor, value: any }) => void;
+
     // -------------------------------------------------------------------------
     // Input accessors
     // -------------------------------------------------------------------------

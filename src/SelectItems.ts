@@ -9,7 +9,7 @@ import {
     AfterViewInit,
     ElementRef,
     ViewChildren,
-    QueryList
+    QueryList, Output, EventEmitter
 } from "@angular/core";
 import {NG_VALIDATORS, NG_VALUE_ACCESSOR} from "@angular/common";
 import {CheckboxGroup} from "./CheckboxGroup";
@@ -35,7 +35,7 @@ import {SelectValidator} from "./SelectValidator";
             <input type="checkbox" [checked]="isAllSelected(getItems())">
             <span class="select-items-label">{{ selectAllLabel }}</span>
         </div>
-        <checkbox-group #checkboxGroup [(ngModel)]="valueAccessor.model" (ngModelChange)="changeModel($event)" [trackBy]="trackBy">
+        <checkbox-group #checkboxGroup [(ngModel)]="valueAccessor.model" (ngModelChange)="changeModel($event)" [trackBy]="trackBy" [customToggleLogic]="customToggleLogic">
             <div *ngFor="let item of getItems(); let last = last" 
                 #itemElement
                 [class.active]="active === item"
@@ -44,6 +44,7 @@ import {SelectValidator} from "./SelectValidator";
                 [class.selected]="checkboxItem.isChecked()"
                 class="select-items-item item">
                 <checkbox-item #checkboxItem
+                    (onSelect)="onSelect.emit($event)"
                     [value]="getItemValue(item)" 
                     [readonly]="readonly"
                     [disabled]="isItemDisabled(item)">
@@ -72,6 +73,7 @@ import {SelectValidator} from "./SelectValidator";
                 [class.selected]="radioItem.isChecked()"
                 class="select-items-item item">
                 <radio-item #radioItem
+                    (onSelect)="onSelect.emit($event)"
                     [value]="getItemValue(item)" 
                     [readonly]="readonly"
                     [disabled]="isItemDisabled(item)">
@@ -243,6 +245,12 @@ export class SelectItems implements AfterViewInit {
 
     @Input()
     filter: (items: any[]) => any[];
+
+    @Input()
+    customToggleLogic: (options: { event: MouseEvent, valueAccessor: SelectValueAccessor }) => void;
+
+    @Output()
+    onSelect = new EventEmitter<{ event: Event }>();
 
     // -------------------------------------------------------------------------
     // Public Properties

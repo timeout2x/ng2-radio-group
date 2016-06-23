@@ -1,10 +1,10 @@
-import {Component, Input, Host, forwardRef, Inject, ViewEncapsulation} from "@angular/core";
+import {Component, Input, Host, forwardRef, Inject, ViewEncapsulation, Output, EventEmitter} from "@angular/core";
 import {CheckboxGroup} from "./CheckboxGroup";
 
 @Component({
     selector: "checkbox-item",
     template: `
-<div (click)="toggleCheck()"
+<div (click)="toggleCheck($event)"
      [class.disabled]="isDisabled()"
      [class.readonly]="isReadonly()"
      class="checkbox-item" >
@@ -38,6 +38,9 @@ export class CheckboxItem {
     @Input()
     readonly: boolean = false;
 
+    @Output()
+    onSelect = new EventEmitter<{ event: Event }>();
+
     // -------------------------------------------------------------------------
     // Constructor
     // -------------------------------------------------------------------------
@@ -49,9 +52,20 @@ export class CheckboxItem {
     // Public Methods
     // -------------------------------------------------------------------------
 
-    toggleCheck() {
+    toggleCheck(event: MouseEvent) {
         if (this.isReadonly() || this.isDisabled()) return;
-        this.checkboxGroup.valueAccessor.addOrRemove(this.value);
+        if (this.checkboxGroup.customToggleLogic) {
+            this.checkboxGroup.customToggleLogic({
+                event: event,
+                valueAccessor: this.checkboxGroup.valueAccessor,
+                value: this.value
+            });
+
+        } else {
+            this.checkboxGroup.valueAccessor.addOrRemove(this.value);
+        }
+
+        this.onSelect.emit({ event: event });
     }
 
     isChecked() {

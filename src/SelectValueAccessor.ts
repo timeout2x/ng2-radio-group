@@ -67,9 +67,14 @@ export class SelectValueAccessor implements ControlValueAccessor {
     remove(value: any) {
         let index: number = -1;
         if (this.trackBy) {
-            index = this._model.indexOf(this._model.find((i: any) => i[this.trackBy] === value[this.trackBy]));
+            const item = this._model.find((i: any) => i[this.trackBy] === value[this.trackBy]);
+            this.removeAt(this._model.indexOf(item));
+            // filter or find?
+           /* this._model
+                .filter((i: any) => i[this.trackBy] === value[this.trackBy])
+                .forEach((i: any) => this.removeAt(this._model.indexOf(i)));*/
         } else {
-            index = this._model.indexOf(value);
+            this.removeAt(this._model.indexOf(value));
         }
         if (index !== -1) {
             this._model.splice(index, 1);
@@ -83,6 +88,14 @@ export class SelectValueAccessor implements ControlValueAccessor {
 
         this._model.splice(index, 1);
         this.onChange(this._model);
+    }
+
+    clear() {
+        if (this._model instanceof Array) {
+            this._model.splice(0, this._model.length);
+        } else {
+            this._model = undefined;
+        }
     }
 
     addAt(value: any, index: number): boolean {

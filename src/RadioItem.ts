@@ -1,10 +1,11 @@
-import {Component, Input, Host, forwardRef, Inject, ViewEncapsulation} from "@angular/core";
+import {Component, Input, Host, forwardRef, Inject, ViewEncapsulation, Output} from "@angular/core";
 import {RadioGroup} from "./RadioGroup";
+import {EventEmitter} from "@angular/platform-browser-dynamic/src/facade/async";
 
 @Component({
     selector: "radio-item",
     template: `
-<div (click)="check()" 
+<div (click)="check($event)" 
      [class.disabled]="isDisabled()"
      [class.readonly]="isReadonly()"
      class="radio-item" >
@@ -37,6 +38,9 @@ export class RadioItem {
 
     @Input()
     readonly: boolean = false;
+    
+    @Output()
+    onSelect = new EventEmitter<{ event: Event }>();
 
     // -------------------------------------------------------------------------
     // Constructor
@@ -49,9 +53,10 @@ export class RadioItem {
     // Public Methods
     // -------------------------------------------------------------------------
 
-    check() {
+    check(event: MouseEvent) {
         if (this.isReadonly() || this.isDisabled()) return;
         this.radioGroup.valueAccessor.set(this.value);
+        this.onSelect.emit({ event: event });
     }
 
     isChecked() {
