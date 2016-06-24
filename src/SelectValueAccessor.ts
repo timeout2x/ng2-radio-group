@@ -9,7 +9,8 @@ export class SelectValueAccessor implements ControlValueAccessor {
     // -------------------------------------------------------------------------
 
     modelWrites = new EventEmitter<any>();
-    trackBy: string;
+    trackBy: string|((item: any) => string);
+    valueBy: string|((item: any) => string);
 
     // -------------------------------------------------------------------------
     // Private Properties
@@ -65,20 +66,17 @@ export class SelectValueAccessor implements ControlValueAccessor {
     }
 
     remove(value: any) {
-        let index: number = -1;
+        value = this.extractModelValue(value);
         if (this.trackBy) {
-            const item = this._model.find((i: any) => i[this.trackBy] === value[this.trackBy]);
+            const item = this._model.find((i: any) => {
+                return this.extractValue(i, this.trackBy) === this.extractValue(value, this.trackBy);
+            });
             this.removeAt(this._model.indexOf(item));
-            // filter or find?
-           /* this._model
-                .filter((i: any) => i[this.trackBy] === value[this.trackBy])
-                .forEach((i: any) => this.removeAt(this._model.indexOf(i)));*/
         } else {
-            this.removeAt(this._model.indexOf(value));
-        }
-        if (index !== -1) {
-            this._model.splice(index, 1);
-            this.onChange(this._model);
+            const item = this._model.find((i: any) => {
+                return i === value;
+            });
+            this.removeAt(this._model.indexOf(item));
         }
     }
 
@@ -115,16 +113,21 @@ export class SelectValueAccessor implements ControlValueAccessor {
     }
 
     has(value: any): boolean {
+        value = this.extractModelValue(value);
         if (this._model instanceof Array) {
             if (this.trackBy) {
-                return !!this._model.find((i: any) => i[this.trackBy] === value[this.trackBy]);
+                return !!this._model.find((i: any) => {
+                    return this.extractValue(i, this.trackBy) === this.extractValue(value, this.trackBy);
+                });
             } else {
-                return this._model.indexOf(value) !== -1;
+                return !!this._model.find((i: any) => {
+                    return i === value;
+                });
             }
 
         } else if (this._model !== null && this._model !== undefined) {
             if (this.trackBy) {
-                return this._model[this.trackBy] === value[this.trackBy];
+                return this.extractValue(this._model, this.trackBy) === this.extractValue(value, this.trackBy);
             } else {
                 return this._model === value;
             }
@@ -154,37 +157,20 @@ export class SelectValueAccessor implements ControlValueAccessor {
         return has;
     }
 
-    // -------------------------------------------------------------------------
-    // Private Methods
-    // -------------------------------------------------------------------------
-
-    /*private hasModelValue() {
-        if (this.model instanceof Array) {
-            return this.model.indexOf(this.value) !== -1;
+    private extractModelValue(model: any) {
+        if (this.valueBy) {
+            return this.extractValue(model, this.valueBy);
         } else {
-            return this.model === this.value;
+            return model;
         }
-    }*/
+    }
 
-    /*private addOrRemoveValue() {
-        if (!this.model)
-            this.model = [];
-
-        if (this.model instanceof Array) {
-            if (this.hasModelValue()) {
-                this.model.splice(this.model.indexOf(this.value), 1);
-            } else {
-                this.model.push(this.value);
-            }
+    private extractValue(model: any, value: string|((item: any) => string)) {
+        if (value instanceof Function) {
+            return (value as (item: any) => any)(model);
         } else {
-            if (this.model === this.value) {
-                this.model = this.uncheckedValue;
-            } else {
-                this.model = this.value;
-            }
+            return model[value as string];
         }
-        // this.writeValue(this.model);
-        this.onChange(this.model);
-    }*/
+    }
 
 }

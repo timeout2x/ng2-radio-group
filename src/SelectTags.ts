@@ -11,20 +11,27 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
 @Component({
     selector: "select-tags",
     template: `
-<div class="select-tags">
-    <div class="select-tags-dropdown dropdown" dropdown>
-        <div tabindex="1" class="select-tags-box" (click)="tagsBoxFocus()" (keydown)="onSelectTagsBoxKeydown($event)">
+<div class="select-tags"
+     [class.disabled]="disabled">
+    <div class="select-tags-dropdown dropdown" dropdown [dropdownToggle]="false">
+        <div #selectTagsBox
+            (click)="focusTagsInput()" 
+            (keydown)="onSelectTagsBoxKeydown($event)"
+            tabindex="1" 
+            class="select-tags-box">
             <select-items #boxSelectItems
                 [(ngModel)]="selectedItems"
                 [hideControls]="true"
                 [removeButton]="true"
+                [disabled]="disabled"
                 [items]="valueAccessor.model"
                 (onSelect)="onTagSelect($event)"
                 [customToggleLogic]="selectItemsToggleLogic"
-                labelBy="name"
-                trackBy="name"></select-items>
+                [labelBy]="valueBy ? listLabelBy : (listLabelBy || labelBy)"
+                [trackBy]="valueBy ? listTrackBy : (listTrackBy || trackBy)"></select-items>
             <input #selectTagsBoxInput 
                    class="select-tags-input"
+                   [class.hidden]="items && valueAccessor.model && items.length === valueAccessor.model.length && !loader"
                    dropdown-open
                    type="text"
                    [placeholder]="placeholder"
@@ -39,7 +46,7 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
                    (keydown.enter)="addTerm()"/>
         </div>
         <div class="select-tags-add-button" [class.hidden]="!persist || !term || !term.length">
-            <a (click)="addTerm()">{{ addButtonLabel }}</a> (or press enter)
+            <a (click)="addTerm()">{{ addButtonLabel }}</a> {{ addButtonSecondaryLabel }}
         </div>
         <div class="select-tags-dropdown-menu dropdown-menu"
             [class.hidden]="!dropdownSelectItems.getItems().length">
@@ -47,11 +54,12 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
                 [(ngModel)]="valueAccessor.model" 
                 (ngModelChange)="onModelChange($event)"
                 [items]="items"
+                [keyword]="term"
                 [hideSelected]="true"
                 [hideControls]="true"
                 [multiple]="true"
-                [disabled]="disabled"
                 [labelBy]="labelBy"
+                [searchBy]="labelBy"
                 [trackBy]="trackBy"
                 [valueBy]="valueBy"
                 [limit]="limit"
@@ -64,7 +72,6 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
     styles: [`
 .select-tags {
 }
-.select-tags-add-button.hidden,
 .select-tags .hidden {
     display: none !important;
 }
@@ -89,17 +96,13 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
 }
 .select-tags .select-tags-dropdown-menu {
     position: absolute;
-    /* position: relative; */
     top: 100%;
     width: 100%;
     left: 0;
     z-index: 1000;
     display: none;
-    /* float: left; */
     margin: 2px 0px 2px -1px;
     min-width: 160px;
-    /* padding: 5px 10px 5px 0px; */
-    /* margin: 5px 0 0 -6px; */
     padding: 5px 0 5px 0;
     font-size: 14px;
     text-align: left;
@@ -109,23 +112,6 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
     background-clip: padding-box;
     border: 1px solid #ccc;
     border: 1px solid rgba(0, 0, 0, .15);   
-    /*position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 1000;
-    display: none;
-    float: left;
-    min-width: 160px;
-    padding: 5px 0;
-    margin: 2px 0 0;
-    font-size: 14px;
-    text-align: left;
-    list-style: none;
-    background-color: #fff;
-    -webkit-background-clip: padding-box;
-    background-clip: padding-box;
-    border: 1px solid #ccc;
-    border: 1px solid rgba(0, 0, 0, .15);*/
 }
 .select-tags .select-tags-dropdown.open .dropdown-menu {
     display: block;
@@ -232,6 +218,31 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
     background-color: #eeeeee;
     cursor: not-allowed;
 }
+.select-tags.disabled .select-items .checkbox-item.disabled:hover, .select-tags .select-items .radio-item.disabled:hover{
+    color: #BBB;
+}
+.select-tags.disabled,
+.select-tags.disabled .select-tags-box .select-items .remove-button,
+.select-tags.disabled .select-tags-box .select-items .select-items-item,
+.select-tags.disabled .select-tags-box .select-items .no-selection,
+.select-tags.disabled .select-tags-box .select-items .select-all,
+.select-tags.disabled .select-tags-box .select-items .checkbox-item,
+.select-tags.disabled .select-tags-box .select-items .radio-item {
+    cursor: not-allowed;
+}
+.select-tags.disabled .select-tags-box .select-items .select-items-item .remove-button:hover {
+    background: #EEE;
+}
+.select-tags.disabled .select-tags-box .select-items .select-items-item .remove-button {
+    border-left: 1px solid #CCC;
+}
+.select-tags.disabled .select-tags-box .select-items .select-items-item {
+    background: #EEE;
+    border: 1px solid #CCC;
+    color: #BBB;
+    box-shadow: none;
+    text-shadow: none;
+}
 `],
     encapsulation: ViewEncapsulation.None,
     directives: [
@@ -259,12 +270,6 @@ export class SelectTags implements OnInit {
     // -------------------------------------------------------------------------
 
     @Input()
-    placeholder: string = "";
-
-    @Input()
-    multiple: boolean;
-
-    @Input()
     debounceTime = 500;
 
     @Input()
@@ -274,13 +279,13 @@ export class SelectTags implements OnInit {
     persist: boolean = false;
 
     @Input()
-    trackBy: string|((item: any) => string);
+    listTrackBy: string|((item: any) => string);
+
+    @Input()
+    listLabelBy: string|((item: any) => string);
 
     @Input()
     labelBy: string|((item: any) => string);
-
-    @Input()
-    valueBy: string|((item: any) => any);
 
     @Input()
     disableBy: string|((item: any) => string);
@@ -298,10 +303,16 @@ export class SelectTags implements OnInit {
     limit: number;
 
     @Input()
+    minModelSize: number; // todo: at least should notify about errors if model size isnt enought
+
+    @Input()
     maxModelSize: number;
 
     @Input()
     loader: (term: string) => Observable<any>;
+
+    @Input()
+    items: any[] = [];
 
     @Input()
     itemConstructor: ((term: string) => any);
@@ -310,16 +321,61 @@ export class SelectTags implements OnInit {
     addButtonLabel: string = "add";
 
     @Input()
+    addButtonSecondaryLabel: string = "(or press enter)";
+
+    @Input()
     removeByKey: boolean = true; // todo
 
     @Input()
-    unqiue: boolean = true; // todo
+    unqiue: boolean = false; // todo
 
     @Input()
-    minLength: boolean = true; // todo
+    minLength: number; // todo
 
     @Input()
-    maxLength: boolean = true; // todo
+    maxLength: number; // todo
+
+    // -------------------------------------------------------------------------
+    // Input accessors
+    // -------------------------------------------------------------------------
+
+    @Input()
+    set placeholder(placeholder: string) {
+        this._placeholder = placeholder;
+        if (!this.term)
+            this.recalculateInputWidth(undefined, placeholder);
+    }
+
+    get placeholder() {
+        return this._placeholder;
+    }
+
+    @Input()
+    set valueBy(valueBy: string|((item: any) => string)) {
+        this.valueAccessor.valueBy = valueBy;
+    }
+
+    get valueBy() {
+        return this.valueAccessor.valueBy;
+    }
+
+    @Input()
+    set trackBy(trackBy: string|((item: any) => string)) {
+        this.valueAccessor.trackBy = trackBy;
+    }
+
+    get trackBy() {
+        return this.valueAccessor.trackBy;
+    }
+
+    @Input()
+    set required(required: boolean) {
+        this.validator.options.required = required;
+    }
+
+    get required() {
+        return this.validator.options.required;
+    }
 
     // -------------------------------------------------------------------------
     // Public Properties
@@ -328,7 +384,6 @@ export class SelectTags implements OnInit {
     termControl = new Control();
     term: string;
     lastLoadTerm: string = "";
-    items: any[] = [];
     selectedItems: any[] = [];
 
     @ViewChild("selectTagsBoxInput")
@@ -336,6 +391,9 @@ export class SelectTags implements OnInit {
 
     @ViewChild("boxSelectItems")
     boxSelectItems: SelectItems;
+
+    @ViewChild("selectTagsBox")
+    selectTagsBox: ElementRef;
 
     selectItemsToggleLogic = (options: { event: MouseEvent, valueAccessor: SelectValueAccessor, value: any }) => {
         if (options.event.metaKey || options.event.shiftKey || options.event.ctrlKey) {
@@ -350,9 +408,11 @@ export class SelectTags implements OnInit {
     // Private Properties
     // -------------------------------------------------------------------------
 
+    private _placeholder: string = "";
     private cursorPosition: number = 0;
     private originalModel = false;
     private initialized: boolean = false;
+    private itemsAreLoaded: boolean = false;
 
     // -------------------------------------------------------------------------
     // Constructor
@@ -365,6 +425,7 @@ export class SelectTags implements OnInit {
             if (model)
                 this.originalModel = true;
             if (this.initialized) {
+                this.cursorPosition = model.length;
                 this.term = this.getItemLabel(model);
                 this.recalculateInputWidth(undefined, this.term);
             }
@@ -377,13 +438,17 @@ export class SelectTags implements OnInit {
 
     ngOnInit() {
         this.initialized = true;
-        this.term = this.getItemLabel(this.valueAccessor.model);
+
+        if (this.valueAccessor.model) {
+            this.cursorPosition = this.valueAccessor.model.length;
+            this.term = this.getItemLabel(this.valueAccessor.model);
+        }
 
         // load options on term changes
         this.termControl
             .valueChanges
             .debounceTime(this.debounceTime) // make a debounced request on term change
-            .filter(term => !this.originalModel && term && term.length >= this.minQueryLength)
+            .filter(term => !this.originalModel && typeof term === "string" && term.trim().length >= this.minQueryLength)
             .subscribe(term => this.load());
 
         this.termControl
@@ -397,6 +462,9 @@ export class SelectTags implements OnInit {
     // Public Methods
     // -------------------------------------------------------------------------
 
+    /**
+     * Load items using loader.
+     */
     load() {
         if (!this.loader || this.originalModel || !this.term || this.term.length < this.minQueryLength || this.term === this.lastLoadTerm)
             return;
@@ -406,31 +474,44 @@ export class SelectTags implements OnInit {
             .subscribe(items => {
                 this.lastLoadTerm = this.term;
                 this.items = items;
+                this.itemsAreLoaded = true;
             });
     }
 
+    /**
+     * On model change outside.
+     */
     onModelChange(model: any[]) {
         this.cursorPosition = model.length;
         this.valueAccessor.set(model);
         this.lastLoadTerm = "";
         this.term = "";
         this.recalculateInputWidth(undefined, this.term);
-        this.items = [];
+        if (this.itemsAreLoaded)
+            this.items = [];
     }
 
+    /**
+     * Adds new term to the tags input.
+     */
     addTerm() {
-        if (!this.term || !this.persist) return;
+        const term = this.term ? this.term.trim() : "";
+        if (!term || !this.persist) return;
 
-        const newModel = this.itemConstructor ? this.itemConstructor(this.term) : { [this.labelBy as string]: this.term };
+        const newModel = this.itemConstructor ? this.itemConstructor(term) : { [this.labelBy as string]: term };
         this.valueAccessor.addAt(newModel, this.cursorPosition);
         this.cursorPosition++;
         setTimeout(() => this.move()); // using timeout is monkey patch
         this.lastLoadTerm = "";
         this.term = "";
-        this.items = [];
-        this.recalculateInputWidth(undefined, this.term);
+        if (this.itemsAreLoaded)
+            this.items = [];
+        this.recalculateInputWidth(undefined, term);
     }
 
+    /**
+     * Checks if this component is disabled.
+     */
     isDisabled() {
         if (this.maxModelSize > 0 &&
             this.valueAccessor.model.length >= this.maxModelSize)
@@ -454,10 +535,19 @@ export class SelectTags implements OnInit {
         return item;
     }
 
+    /**
+     * Recalculates input width. Input width always match input's contents.
+     */
     recalculateInputWidth(event?: Event, value?: any) {
         this.widthCalculator.recalculateInputWidth(this.selectTagsBoxInput.nativeElement, event, value);
     }
 
+    /**
+     * When keydown in the tags input occurs we need to recalculate width of input.
+     * Also we handle to some of them specifically:
+     * - left, right to move input to the left or right
+     * - backspace and delete to remove previous or next tag box
+     */
     onInputKeydown(event: KeyboardEvent) {
         this.recalculateInputWidth(event);
 
@@ -481,40 +571,47 @@ export class SelectTags implements OnInit {
         }
     }
 
+    /**
+     * Moves input to the left.
+     */
     moveLeft() {
         if (this.cursorPosition === 0) return;
         --this.cursorPosition;
         this.move();
     }
 
+    /**
+     * Moves input to the right.
+     */
     moveRight() {
         if (this.cursorPosition >= this.boxSelectItems.itemElements.toArray().length) return;
         ++this.cursorPosition;
         this.move();
     }
 
-    tagsBoxFocus() {
+    /**
+     * Sets the focus to tags input. Selected tag boxes should be unselected after this operation.
+     */
+    focusTagsInput() {
         this.selectedItems = [];
         this.selectTagsBoxInput.nativeElement.focus();
     }
 
+    /**
+     * When user keydowns on select-tags-input we need to capture backspace, delete, esc and Ctrl+A to make
+     * operations with tag boxes.
+     */
     onSelectTagsBoxKeydown(event: KeyboardEvent) {
         if (this.term) {
-            this.tagsBoxFocus();
+            this.focusTagsInput();
             return;
         }
         
-        if (event.keyCode === 8 && this.removeByKey && this.selectedItems.length) { // backspace
+        if ((event.keyCode === 46 || event.keyCode === 8) && this.removeByKey && this.selectedItems.length) { // backspace or delete
             this.valueAccessor.removeMany(this.selectedItems);
             this.cursorPosition = this.valueAccessor.model.length;
             this.selectedItems = [];
-            event.preventDefault();
-            event.stopPropagation();
-
-        } else if (event.keyCode === 46 && this.removeByKey && this.selectedItems.length) { // delete
-            this.valueAccessor.removeMany(this.selectedItems);
-            this.cursorPosition = this.valueAccessor.model.length;
-            this.selectedItems = [];
+            this.focusTagsInput();
             event.preventDefault();
             event.stopPropagation();
 
@@ -529,6 +626,10 @@ export class SelectTags implements OnInit {
 
     }
 
+    /**
+     * When user clicks item in boxes a tag we need to stop the event propagation, because we don't want out input
+     * to get a focus at this time.
+     */
     onTagSelect(event: { event: MouseEvent }) {
         event.event.preventDefault();
         event.event.stopPropagation();
@@ -538,6 +639,9 @@ export class SelectTags implements OnInit {
     // Private Methods
     // -------------------------------------------------------------------------
 
+    /**
+     * Moves input box into cursorPosition.
+     */
     private move() {
         const items = this.boxSelectItems.itemElements.toArray();
         const input = this.selectTagsBoxInput.nativeElement;

@@ -336,6 +336,7 @@ import {Car} from "./Car";
                   [minModelSize]="0"
                   labelBy="name"
                   searchBy="name"
+                  searchLabel="search..."
                   orderBy="name"
                   orderDirection="desc"
                   moreLabel="more"

@@ -37,14 +37,14 @@ export class RadioGroup {
     // -------------------------------------------------------------------------
 
     @Input()
-    set trackBy(trackBy: string) {
+    set trackBy(trackBy: string|((item: any) => string)) {
         this.valueAccessor.trackBy = trackBy;
     }
 
     get trackBy() {
         return this.valueAccessor.trackBy;
     }
-
+    
     @Input()
     set required(required: boolean) {
         this.validator.options.required = required;

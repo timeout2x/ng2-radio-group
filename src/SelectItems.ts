@@ -23,19 +23,19 @@ import {SelectValidator} from "./SelectValidator";
     selector: "select-items",
     template: `
 <div class="select-items">
-    <div [class.hidden]="!searchBy">
-        <input class="select-items-search" type="text" [(ngModel)]="keyword" [placeholder]="searchLabel || ''">
+    <div [class.hidden]="!searchBy || !searchLabel">
+        <input class="select-items-search" type="text" [(ngModel)]="keyword" [placeholder]="searchLabel">
     </div>
     <div class="select-items-multiple" *ngIf="isMultiple()">
         <div class="select-items-item select-all" 
             (click)="selectAll()" 
-            [ngStyle]="{ display: ((searchBy && keyword) || !selectAllLabel || !getItems().length) ? 'none' : 'block' }"
+            [ngStyle]="{ display: ((searchBy && searchLabel && keyword) || !selectAllLabel || !getItems().length) ? 'none' : 'block' }"
             [class.active]="active === '--select-all'"
             [class.selected]="isAllSelected(getItems())">
             <input type="checkbox" [checked]="isAllSelected(getItems())">
             <span class="select-items-label">{{ selectAllLabel }}</span>
         </div>
-        <checkbox-group #checkboxGroup [(ngModel)]="valueAccessor.model" (ngModelChange)="changeModel($event)" [trackBy]="trackBy" [customToggleLogic]="customToggleLogic">
+        <checkbox-group [(ngModel)]="valueAccessor.model" (ngModelChange)="changeModel($event)" [trackBy]="trackBy" [customToggleLogic]="customToggleLogic">
             <div *ngFor="let item of getItems(); let last = last" 
                 #itemElement
                 [class.active]="active === item"
@@ -64,7 +64,7 @@ import {SelectValidator} from "./SelectValidator";
             <input type="radio" [checked]="!valueAccessor.model">
             <span class="select-items-label">{{ noSelectionLabel }}</span>
         </div>
-        <radio-group #radioGroup [(ngModel)]="valueAccessor.model" (ngModelChange)="changeModel($event)" [trackBy]="trackBy">
+        <radio-group [(ngModel)]="valueAccessor.model" (ngModelChange)="changeModel($event)" [trackBy]="trackBy">
             <div *ngFor="let item of getItems(); let last = last"
                 #itemElement
                 [class.active]="active === item"
@@ -182,18 +182,12 @@ export class SelectItems implements AfterViewInit {
 
     @Input()
     multiple: boolean;
-    
-    @Input()
-    trackBy: string;
 
     @Input()
     disableBy: string|((item: any) => string);
 
     @Input()
     labelBy: string|((item: any) => string);
-
-    @Input()
-    valueBy: string|((item: any) => any);
 
     @Input()
     searchBy: string|((item: any, keyword: string) => boolean);
@@ -251,20 +245,47 @@ export class SelectItems implements AfterViewInit {
 
     @Output()
     onSelect = new EventEmitter<{ event: Event }>();
+    
+    @Input()
+    keyword: string;
+    
+    // -------------------------------------------------------------------------
+    // Input accessors
+    // -------------------------------------------------------------------------
 
+    @Input()
+    set valueBy(valueBy: string|((item: any) => string)) {
+        this.valueAccessor.valueBy = valueBy;
+    }
+
+    get valueBy() {
+        return this.valueAccessor.valueBy;
+    }
+
+    @Input()
+    set trackBy(trackBy: string|((item: any) => string)) {
+        this.valueAccessor.trackBy = trackBy;
+    }
+
+    get trackBy() {
+        return this.valueAccessor.trackBy;
+    }
+
+    @Input()
+    set required(required: boolean) {
+        this.validator.options.required = required;
+    }
+
+    get required() {
+        return this.validator.options.required;
+    }
+    
     // -------------------------------------------------------------------------
     // Public Properties
     // -------------------------------------------------------------------------
 
-    keyword: string;
     isMoreShown: boolean = false;
     isMaxLimitReached: boolean = false;
-
-    @ViewChild(RadioGroup)
-    radioGroup: RadioGroup;
-
-    @ViewChild(CheckboxGroup)
-    checkboxGroup: CheckboxGroup;
 
     @ViewChildren("itemElement")
     itemElements: QueryList<ElementRef>;
@@ -314,12 +335,12 @@ export class SelectItems implements AfterViewInit {
             }
         }
 
-        if (this.isMultiple() && this.checkboxGroup) {
+        if (this.isMultiple()) {
             if (this.maxModelSize > 0 && this.valueAccessor.model.length >= this.maxModelSize) {
-                return this.checkboxGroup.valueAccessor.has(item) ? false : true;
+                return this.valueAccessor.has(item) ? false : true;
             }
             if (this.minModelSize > 0 && this.valueAccessor.model.length <= this.minModelSize) {
-                return this.checkboxGroup.valueAccessor.has(item) ? true : false;
+                return this.valueAccessor.has(item) ? true : false;
             }
 
         }
@@ -399,12 +420,8 @@ export class SelectItems implements AfterViewInit {
                 items = items.reverse();
         }
 
-        if (this.hideSelected && (this.checkboxGroup || this.radioGroup)) {
-            if (this.isMultiple()) {
-                items = items.filter(item => !this.checkboxGroup.valueAccessor.has(item));
-            } else {
-                items = items.filter(item => !this.radioGroup.valueAccessor.has(item));
-            }
+        if (this.hideSelected) {
+            items = items.filter(item => !this.valueAccessor.has(item));
         }
 
         this.isMaxLimitReached = false;
@@ -422,6 +439,7 @@ export class SelectItems implements AfterViewInit {
     }
 
     removeItem(item: any) {
+        if (this.isItemDisabled(item)) return;
         this.items.splice(this.items.indexOf(item), 1);
     }
 
@@ -436,21 +454,20 @@ export class SelectItems implements AfterViewInit {
     selectAll() {
         if (!this.isAllSelected(this.items)) {
             this.items.forEach(item => {
-                this.checkboxGroup.valueAccessor.add(this.getItemValue(item));
+                this.valueAccessor.add(this.getItemValue(item));
             });
         } else {
             this.items.forEach(item => {
-                this.checkboxGroup.valueAccessor.remove(this.getItemValue(item));
+                this.valueAccessor.remove(this.getItemValue(item));
             });
         }
     }
 
     isAllSelected(items: any[]): boolean {
-        if (!this.checkboxGroup) return false;
         let has = true;
         items.forEach(item => {
             if (has)
-                has = this.checkboxGroup.valueAccessor.has(this.getItemValue(item));
+                has = this.valueAccessor.has(this.getItemValue(item));
         });
 
         return has;

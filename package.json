@@ -1,6 +1,6 @@
 {
   "name": "ng2-select-controls",
-  "version": "0.0.6",
+  "version": "0.0.1",
   "description": "Advanced select, checkbox and radio controls.",
   "license": "MIT",
   "readmeFilename": "README.md",
@@ -19,23 +19,41 @@
   "tags": [
     "checkbox-group",
     "radio-group",
+    "autocomplete",
+    "select",
+    "select2",
+    "tags",
+    "tags-input",
+    "multiselect",
+    "multiselect-dropdown",
+    "dropdown",
+    "dropdown-select",
     "angular2",
     "typescript",
+    "angular2-autocomplete",
     "angular2-checkbox",
     "angular2-checkbox-group",
     "angular2-radio",
-    "angular2-radio-group"
+    "angular2-radio-group",
+    "angular2-tags",
+    "angular2-tags-input",
+    "angular2-select",
+    "angular2-select2",
+    "angular2-dropdown",
+    "angular2-multiselect",
+    "angular2-multiselect-dropdown",
+    "angular2-dropdown-select"
   ],
   "peerDependencies": {
     "@angular/core": "^2.0.0-rc.1"
   },
   "devDependencies": {
-    "@angular/core": "2.0.0-rc.2",
-    "@angular/common": "^2.0.0-rc.2",
-    "@angular/compiler": "^2.0.0-rc.2",
-    "@angular/http": "^2.0.0-rc.2",
-    "@angular/platform-browser": "^2.0.0-rc.2",
-    "@angular/platform-browser-dynamic": "^2.0.0-rc.2",
+    "@angular/core": "2.0.0-rc.3",
+    "@angular/common": "^2.0.0-rc.3",
+    "@angular/compiler": "^2.0.0-rc.3",
+    "@angular/http": "^2.0.0-rc.3",
+    "@angular/platform-browser": "^2.0.0-rc.3",
+    "@angular/platform-browser-dynamic": "^2.0.0-rc.3",
     "bootstrap": "^3.3.6",
     "chai": "^3.4.1",
     "del": "^2.2.0",
@@ -60,6 +78,6 @@
     "zone.js": "^0.6.12"
   },
   "dependencies": {
-    "ng2-dropdown": "^0.0.6"
+    "ng2-dropdown": "^0.0.8"
   }
 }

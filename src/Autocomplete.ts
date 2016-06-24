@@ -11,7 +11,7 @@ import {SelectValidator} from "./SelectValidator";
     selector: "autocomplete",
     template: `
 <div class="autocomplete">
-    <div class="autocomplete-dropdown dropdown" dropdown>
+    <div class="autocomplete-dropdown dropdown" dropdown [dropdownToggle]="false">
         <div class="autocomplete-input" [class.autocomplete-input-group]="isMultiple() && persist">
             <input dropdown-open
                    type="text"
@@ -22,11 +22,9 @@ import {SelectValidator} from "./SelectValidator";
                    (focus)="load()"
                    (click)="load()"
                    (keydown.enter)="addTerm()"/>
-               <span class="autocomplete-add-button" [class.hidden]="!isMultiple() || !persist">
-                    <button (click)="addTerm()" [disabled]="disabled" type="button">
-                        {{ addButtonLabel }}
-                    </button>
-              </span>
+            <div class="autocomplete-add-button" [class.hidden]="!isMultiple() || !persist || !term || !term.length">
+                <a (click)="addTerm()">{{ addButtonLabel }}</a> {{ addButtonSecondaryLabel }}
+            </div>
         </div>
         <div class="autocomplete-dropdown-menu dropdown-menu"
             [class.hidden]="!dropdownSelectItems.getItems().length">
@@ -104,6 +102,14 @@ import {SelectValidator} from "./SelectValidator";
     background-color: #eeeeee;
     cursor: not-allowed;
 }
+.autocomplete .autocomplete-add-button {
+    float: right;
+    font-size: 0.75em;
+    color: #999;
+}
+.autocomplete .autocomplete-add-button a {
+    border-bottom: 1px dotted;
+}
 `],
     encapsulation: ViewEncapsulation.None,
     directives: [
@@ -145,13 +151,7 @@ export class Autocomplete implements OnInit {
     persist: boolean = false;
 
     @Input()
-    trackBy: string|((item: any) => string);
-
-    @Input()
     labelBy: string|((item: any) => string);
-
-    @Input()
-    valueBy: string|((item: any) => any);
 
     @Input()
     disableBy: string|((item: any) => string);
@@ -178,7 +178,41 @@ export class Autocomplete implements OnInit {
     itemConstructor: ((term: string) => any);
 
     @Input()
-    addButtonLabel: string = "+";
+    addButtonLabel: string = "add";
+
+    @Input()
+    addButtonSecondaryLabel: string = "(or press enter)";
+
+    // -------------------------------------------------------------------------
+    // Input accessors
+    // -------------------------------------------------------------------------
+
+    @Input()
+    set valueBy(valueBy: string|((item: any) => string)) {
+        this.valueAccessor.valueBy = valueBy;
+    }
+
+    get valueBy() {
+        return this.valueAccessor.valueBy;
+    }
+
+    @Input()
+    set trackBy(trackBy: string|((item: any) => string)) {
+        this.valueAccessor.trackBy = trackBy;
+    }
+
+    get trackBy() {
+        return this.valueAccessor.trackBy;
+    }
+
+    @Input()
+    set required(required: boolean) {
+        this.validator.options.required = required;
+    }
+
+    get required() {
+        return this.validator.options.required;
+    }
 
     // -------------------------------------------------------------------------
     // Public Properties
@@ -222,8 +256,7 @@ export class Autocomplete implements OnInit {
         this.termControl
             .valueChanges
             .debounceTime(this.debounceTime) // make a debounced request on term change
-            .filter(term => !this.originalModel && term && term.length >= this.minQueryLength)
-            // .filter(term => !this.model || this.getItemLabel(this.model) !== term) // don't need to send request if in input there is a model already
+            .filter(term => !this.originalModel && typeof term === "string" && term.trim().length >= this.minQueryLength)
             .subscribe(term => this.load());
 
         this.termControl

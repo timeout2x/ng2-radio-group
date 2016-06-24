@@ -41,7 +41,7 @@ export class CheckboxGroup {
     // -------------------------------------------------------------------------
 
     @Input()
-    set trackBy(trackBy: string) {
+    set trackBy(trackBy: string|((item: any) => string)) {
         this.valueAccessor.trackBy = trackBy;
     }
 

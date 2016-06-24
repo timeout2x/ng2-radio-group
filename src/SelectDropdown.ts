@@ -1,9 +1,10 @@
 import "rxjs/Rx";
-import {Component, Input, forwardRef, Provider, ViewEncapsulation, OnInit, ViewChild} from "@angular/core";
-import {NG_VALIDATORS, NG_VALUE_ACCESSOR, Validator, ControlValueAccessor, Control} from "@angular/common";
+import {Component, Input, Provider, ViewEncapsulation, ViewChild} from "@angular/core";
+import {NG_VALIDATORS, NG_VALUE_ACCESSOR} from "@angular/common";
 import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES, Dropdown} from "ng2-dropdown";
-import {Observable} from "rxjs/Rx";
+import {SelectValidator} from "./SelectValidator";
+import {SelectValueAccessor} from "./SelectValueAccessor";
 
 @Component({
     selector: "select-dropdown",
@@ -165,17 +166,19 @@ import {Observable} from "rxjs/Rx";
         DROPDOWN_DIRECTIVES
     ],
     providers: [
+        SelectValueAccessor,
+        SelectValidator,
         new Provider(NG_VALUE_ACCESSOR, {
-            useExisting: forwardRef(() => SelectDropdown),
+            useExisting: SelectValueAccessor,
             multi: true
         }),
         new Provider(NG_VALIDATORS, {
-            useExisting: forwardRef(() => SelectDropdown),
+            useExisting: SelectValidator,
             multi: true
         })
     ]
 })
-export class SelectDropdown implements ControlValueAccessor, Validator {
+export class SelectDropdown {
 
     // -------------------------------------------------------------------------
     // Inputs
@@ -203,13 +206,7 @@ export class SelectDropdown implements ControlValueAccessor, Validator {
     listLabelBy: string|((item: any) => string);
 
     @Input()
-    trackBy: string|((item: any) => string);
-
-    @Input()
     labelBy: string|((item: any) => string);
-
-    @Input()
-    valueBy: string|((item: any) => any);
 
     @Input()
     disableBy: string|((item: any) => string);
@@ -251,43 +248,49 @@ export class SelectDropdown implements ControlValueAccessor, Validator {
     filter: (items: any[]) => any[];
 
     // -------------------------------------------------------------------------
+    // Input accessors
+    // -------------------------------------------------------------------------
+
+    @Input()
+    set valueBy(valueBy: string|((item: any) => string)) {
+        this.valueAccessor.valueBy = valueBy;
+    }
+
+    get valueBy() {
+        return this.valueAccessor.valueBy;
+    }
+
+    @Input()
+    set trackBy(trackBy: string|((item: any) => string)) {
+        this.valueAccessor.trackBy = trackBy;
+    }
+
+    get trackBy() {
+        return this.valueAccessor.trackBy;
+    }
+
+    @Input()
+    set required(required: boolean) {
+        this.validator.options.required = required;
+    }
+
+    get required() {
+        return this.validator.options.required;
+    }
+
+    // -------------------------------------------------------------------------
     // Private Properties
     // -------------------------------------------------------------------------
 
     @ViewChild(Dropdown)
     dropdown: Dropdown;
 
-    onChange: (m: any) => void;
-    private onTouched: (m: any) => void;
-    private model: any;
-
     // -------------------------------------------------------------------------
-    // Implemented from ControlValueAccessor
+    // Constructor
     // -------------------------------------------------------------------------
 
-    writeValue(value: any): void {
-        this.model = value;
-    }
-
-    registerOnChange(fn: any): void {
-        this.onChange = fn;
-    }
-
-    registerOnTouched(fn: any): void {
-        this.onTouched = fn;
-    }
-
-    // -------------------------------------------------------------------------
-    // Implemented from Validator
-    // -------------------------------------------------------------------------
-
-    validate(c: Control): any {
-      /*  if (this.required && (!c.value || (c.value instanceof Array) && c.value.length === 0)) {
-            return {
-                required: true
-            };
-        }*/
-        return null;
+    constructor(public valueAccessor: SelectValueAccessor,
+                private validator: SelectValidator) {
     }
 
     // -------------------------------------------------------------------------
@@ -298,10 +301,10 @@ export class SelectDropdown implements ControlValueAccessor, Validator {
         if (this.multiple !== undefined)
             return this.multiple;
 
-        return this.model instanceof Array;
+        return this.valueAccessor.model instanceof Array;
     }
 
-    getItemLabel(item: any) { // todo: duplication
+    getItemLabel(item: any) {
         if (!item) return;
         
         if (this.labelBy) {
@@ -321,6 +324,5 @@ export class SelectDropdown implements ControlValueAccessor, Validator {
             this.dropdown.close();
         }
     }
-
 
 }
