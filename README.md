@@ -1,5 +1,6 @@
 # ng2-radio-group
 
+Ultimate set of select components that you ever need. All with angular2, no jquery.
 Checkbox group and radio group control for your angular2 applications. Does not depend of jquery.
 Please star a project if you liked it, or create an issue if you have problems with it.
 
@@ -24,7 +25,7 @@ Please star a project if you liked it, or create an issue if you have problems w
     }
     ```
 
-## Usage
+## Simple checkboxes and radio boxes
 
 If you need a simple checkbox for your variable:
 
@@ -57,6 +58,8 @@ If you need to select only one item from the multiple options, you need a radio 
 <input type="radio" [(ngModel)]="sortBy" value="watches"> Watch count<br/>
 <input type="radio" [(ngModel)]="sortBy" value="comments"> Comment count<br/>
 ```
+
+## Checkbox and Radio groups
 
 To simplify this selection you can use checkbox and radio groups:
 
@@ -96,6 +99,22 @@ with radio-items:
 ```
 
 Last method allows you to click on labels and you click will treat like you clicked on a checkbox itself.
+
+## Select items component
+
+tbd
+
+## Select dropdown component
+
+tbd
+
+## Autocomplete component
+
+tbd
+
+## Select tags component
+
+tbd
 
 ## Sample
 

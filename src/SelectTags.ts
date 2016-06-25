@@ -22,9 +22,11 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
             <select-items #boxSelectItems
                 [(ngModel)]="selectedItems"
                 [hideControls]="true"
-                [removeButton]="true"
+                [removeButton]="removeButton && !readonly"
                 [disabled]="disabled"
-                [items]="valueAccessor.model"
+                [readonly]="readonly"
+                [(items)]="valueAccessor.model"
+                (itemsChange)="onItemsChange($event)"
                 (onSelect)="onTagSelect($event)"
                 [customToggleLogic]="selectItemsToggleLogic"
                 [labelBy]="valueBy ? listLabelBy : (listLabelBy || labelBy)"
@@ -45,6 +47,9 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
                    (blur)="recalculateInputWidth($event)"
                    (keydown.enter)="addTerm()"/>
         </div>
+        <div class="select-tags-non-unique" [class.hidden]="isTermUnique()">
+            {{ nonUniqueTermLabel }}
+        </div>
         <div class="select-tags-add-button" [class.hidden]="!persist || !term || !term.length">
             <a (click)="addTerm()">{{ addButtonLabel }}</a> {{ addButtonSecondaryLabel }}
         </div>
@@ -63,8 +68,10 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
                 [trackBy]="trackBy"
                 [valueBy]="valueBy"
                 [limit]="limit"
+                [filter]="filter"
                 [orderBy]="orderBy"
                 [orderDirection]="orderDirection"
+                [selectAllLabel]="selectAllLabel"
                 [disableBy]="disableBy"></select-items>
         </div>
     </div>
@@ -76,9 +83,16 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
     display: none !important;
 }
 .select-tags-add-button {
+    margin-top: 2px;
     float: right;
     font-size: 0.75em;
     color: #999;
+}
+.select-tags-non-unique {
+    margin-top: 2px;
+    float: left;
+    font-size: 0.75em;
+    color: #992914;
 }
 .select-tags-add-button a {
     border-bottom: 1px dotted;
@@ -133,8 +147,8 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
     right: 0;
     bottom: 0;
     display: inline-block;
-    width: 17px;
-    padding: 3px 0 0 0;
+    width: 20px;
+    padding: 2px 0 0 0;
     font-size: 12px;
     font-weight: bold;
     color: inherit;
@@ -297,13 +311,13 @@ export class SelectTags implements OnInit {
     orderDirection: "asc"|"desc";
 
     @Input()
+    readonly: boolean = false;
+
+    @Input()
     disabled: boolean = false;
 
     @Input()
     limit: number;
-
-    @Input()
-    minModelSize: number; // todo: at least should notify about errors if model size isnt enought
 
     @Input()
     maxModelSize: number;
@@ -318,22 +332,31 @@ export class SelectTags implements OnInit {
     itemConstructor: ((term: string) => any);
 
     @Input()
+    nonUniqueTermLabel: string = "item with such name already exist";
+
+    @Input()
     addButtonLabel: string = "add";
 
     @Input()
     addButtonSecondaryLabel: string = "(or press enter)";
 
     @Input()
-    removeByKey: boolean = true; // todo
+    removeButton: boolean = true;
 
     @Input()
-    unqiue: boolean = false; // todo
+    removeByKey: boolean = true;
 
     @Input()
-    minLength: number; // todo
+    unique: boolean = false;
 
     @Input()
-    maxLength: number; // todo
+    selectAllLabel: string;
+
+    /**
+     * Additional filter to filter items displayed in the dropdown.
+     */
+    @Input()
+    filter: (items: any[]) => any[];
 
     // -------------------------------------------------------------------------
     // Input accessors
@@ -377,6 +400,15 @@ export class SelectTags implements OnInit {
         return this.validator.options.required;
     }
 
+    @Input()
+    set minModelSize(minModelSize: number) {
+        this.validator.options.minModelSize = minModelSize;
+    }
+
+    get minModelSize() {
+        return this.validator.options.minModelSize;
+    }
+
     // -------------------------------------------------------------------------
     // Public Properties
     // -------------------------------------------------------------------------
@@ -391,6 +423,9 @@ export class SelectTags implements OnInit {
 
     @ViewChild("boxSelectItems")
     boxSelectItems: SelectItems;
+
+    @ViewChild("dropdownSelectItems")
+    dropdownSelectItems: SelectItems;
 
     @ViewChild("selectTagsBox")
     selectTagsBox: ElementRef;
@@ -455,6 +490,7 @@ export class SelectTags implements OnInit {
             .valueChanges
             .subscribe((term: string) => {
                 this.originalModel = false;
+                this.dropdownSelectItems.resetActive();
             });
     }
 
@@ -466,7 +502,7 @@ export class SelectTags implements OnInit {
      * Load items using loader.
      */
     load() {
-        if (!this.loader || this.originalModel || !this.term || this.term.length < this.minQueryLength || this.term === this.lastLoadTerm)
+        if (this.readonly || !this.loader || this.originalModel || !this.term || this.term.length < this.minQueryLength || this.term === this.lastLoadTerm)
             return;
 
         return this
@@ -487,8 +523,14 @@ export class SelectTags implements OnInit {
         this.lastLoadTerm = "";
         this.term = "";
         this.recalculateInputWidth(undefined, this.term);
+        this.focusTagsInput();
         if (this.itemsAreLoaded)
             this.items = [];
+    }
+
+    onItemsChange(model: any[]) {
+        this.cursorPosition = model.length;
+        this.valueAccessor.set(model);
     }
 
     /**
@@ -497,6 +539,8 @@ export class SelectTags implements OnInit {
     addTerm() {
         const term = this.term ? this.term.trim() : "";
         if (!term || !this.persist) return;
+        if (this.dropdownSelectItems.hasActive()) return; // if dropdown has active then we select it, instead of adding a new term
+        if (!this.isTermUnique()) return;
 
         const newModel = this.itemConstructor ? this.itemConstructor(term) : { [this.labelBy as string]: term };
         this.valueAccessor.addAt(newModel, this.cursorPosition);
@@ -509,6 +553,13 @@ export class SelectTags implements OnInit {
         this.recalculateInputWidth(undefined, term);
     }
 
+    isTermUnique() {
+        if (!this.term || !this.unique || !this.valueAccessor.model) return true;
+        return !(this.valueAccessor.model as any[]).find(i => {
+            return this.getItemLabel(i) === this.term;
+        });
+    }
+
     /**
      * Checks if this component is disabled.
      */
@@ -516,19 +567,25 @@ export class SelectTags implements OnInit {
         if (this.maxModelSize > 0 &&
             this.valueAccessor.model.length >= this.maxModelSize)
             return true;
+        if (this.readonly)
+            return true;
 
         return this.disabled;
     }
 
+    /**
+     * Gets item's label.
+     */
     getItemLabel(item: any) { // todo: duplication
-        if (!item) return; 
+        if (!item) return ""; 
+        const labelBy = this.valueBy ? this.listLabelBy : (this.listLabelBy || this.labelBy);
         
-        if (this.labelBy) {
-            if (typeof this.labelBy === "string") {
-                return item[this.labelBy as string];
+        if (labelBy) {
+            if (typeof labelBy === "string") {
+                return item[labelBy as string];
 
-            } else if (typeof this.labelBy === "function") {
-                return (this.labelBy as any)(item);
+            } else if (typeof labelBy === "function") {
+                return (labelBy as any)(item);
             }
         }
 
@@ -602,26 +659,39 @@ export class SelectTags implements OnInit {
      * operations with tag boxes.
      */
     onSelectTagsBoxKeydown(event: KeyboardEvent) {
-        if (this.term) {
+        /*if (this.term) {
             this.focusTagsInput();
             return;
-        }
-        
-        if ((event.keyCode === 46 || event.keyCode === 8) && this.removeByKey && this.selectedItems.length) { // backspace or delete
+        }*/
+
+        if (!this.term && (event.keyCode === 46 || event.keyCode === 8) && this.removeByKey && this.selectedItems.length) { // backspace or delete
             this.valueAccessor.removeMany(this.selectedItems);
             this.cursorPosition = this.valueAccessor.model.length;
             this.selectedItems = [];
-            this.focusTagsInput();
             event.preventDefault();
             event.stopPropagation();
+            this.focusTagsInput();
 
-        } else if (event.keyCode === 27) { // esc
+        } else if (!this.term && event.keyCode === 27) { // esc
             this.selectedItems = [];
 
-        } else if (event.keyCode === 65 && (event.metaKey || event.ctrlKey)) { // ctrl + A
+        } else if (!this.term && event.keyCode === 65 && (event.metaKey || event.ctrlKey)) { // ctrl + A
             this.selectedItems = this.valueAccessor.model.map((i: any) => i);
             event.preventDefault();
             event.stopPropagation();
+
+        } else if (event.keyCode === 38) { // top
+            this.dropdownSelectItems.previousActive();
+            event.preventDefault();
+            event.stopPropagation();
+
+        } else if (event.keyCode === 40) { // bottom
+            this.dropdownSelectItems.nextActive();
+            event.preventDefault();
+            event.stopPropagation();
+
+        } else if (event.keyCode === 13) { // enter
+            this.dropdownSelectItems.selectActive();
         }
 
     }

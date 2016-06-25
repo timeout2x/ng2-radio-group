@@ -4,12 +4,13 @@ import {
     forwardRef,
     Provider,
     ViewEncapsulation,
-    ViewChild,
     ChangeDetectorRef,
     AfterViewInit,
     ElementRef,
     ViewChildren,
-    QueryList, Output, EventEmitter
+    QueryList,
+    Output,
+    EventEmitter
 } from "@angular/core";
 import {NG_VALIDATORS, NG_VALUE_ACCESSOR} from "@angular/common";
 import {CheckboxGroup} from "./CheckboxGroup";
@@ -28,58 +29,77 @@ import {SelectValidator} from "./SelectValidator";
     </div>
     <div class="select-items-multiple" *ngIf="isMultiple()">
         <div class="select-items-item select-all" 
-            (click)="selectAll()" 
+            (click)="selectAll(getItems())" 
             [ngStyle]="{ display: ((searchBy && searchLabel && keyword) || !selectAllLabel || !getItems().length) ? 'none' : 'block' }"
-            [class.active]="active === '--select-all'"
+            [class.hide-controls]="hideControls"
+            [class.active]="activeSelectAll"
             [class.selected]="isAllSelected(getItems())">
             <input type="checkbox" [checked]="isAllSelected(getItems())">
             <span class="select-items-label">{{ selectAllLabel }}</span>
         </div>
         <checkbox-group [(ngModel)]="valueAccessor.model" (ngModelChange)="changeModel($event)" [trackBy]="trackBy" [customToggleLogic]="customToggleLogic">
-            <div *ngFor="let item of getItems(); let last = last" 
-                #itemElement
-                [class.active]="active === item"
-                [class.hide-controls]="hideControls"
-                [class.with-remove-button]="removeButton"
-                [class.selected]="checkboxItem.isChecked()"
-                class="select-items-item item">
-                <checkbox-item #checkboxItem
-                    (onSelect)="onSelect.emit($event)"
-                    [value]="getItemValue(item)" 
-                    [readonly]="readonly"
-                    [disabled]="isItemDisabled(item)">
-                    <span class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="last" class="separator"></span>
-                </checkbox-item>
-                <span class="remove-button" 
-                      [class.hidden]="!removeButton" (click)="removeItem(item)">×</span>
+            <div class="select-items-group" *ngFor="let group of getGroups()">
+                <div class="select-items-group-header"
+                    [class.select-all]="groupSelectAll"
+                    [hidden]="!group" 
+                    (click)="groupSelectAll ? selectAll(getItems(group)) : 0">
+                    <input type="checkbox" 
+                           [hidden]="!groupSelectAll || hideGroupSelectAllCheckbox"
+                           [checked]="isAllSelected(getItems(group))">
+                    <span class="select-items-label">{{ group }}</span>
+                </div>
+                <div class="select-items-group-item" *ngFor="let item of getItems(group); let index = index; let last = last" 
+                    #itemElement
+                    [class.active]="active === index"
+                    [class.hide-controls]="hideControls"
+                    [class.with-remove-button]="removeButton"
+                    [class.selected]="checkboxItem.isChecked()"
+                    class="select-items-item item">
+                    <checkbox-item #checkboxItem
+                        (onSelect)="onSelect.emit($event)"
+                        [value]="getItemValue(item)" 
+                        [readonly]="readonly"
+                        [disabled]="isItemDisabled(item)">
+                        <span class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="last" class="separator"></span>
+                    </checkbox-item>
+                    <span class="remove-button" 
+                          [class.hidden]="!removeButton" (click)="removeItem(item)">×</span>
+                </div>
             </div>
         </checkbox-group>
     </div>
     <div class="select-items-single" *ngIf="!isMultiple()">
         <div class="select-items-item no-selection" 
+            [class.hide-controls]="hideControls"
             [class.hidden]="!noSelectionLabel"
             (click)="resetModel()"
-            [class.active]="active === '--no-selection'"
+            [class.active]="activeNoSelection"
             [class.selected]="!valueAccessor.model">
             <input type="radio" [checked]="!valueAccessor.model">
             <span class="select-items-label">{{ noSelectionLabel }}</span>
         </div>
         <radio-group [(ngModel)]="valueAccessor.model" (ngModelChange)="changeModel($event)" [trackBy]="trackBy">
-            <div *ngFor="let item of getItems(); let last = last"
-                #itemElement
-                [class.active]="active === item"
-                [class.hide-controls]="hideControls"
-                [class.with-remove-button]="removeButton"
-                [class.selected]="radioItem.isChecked()"
-                class="select-items-item item">
-                <radio-item #radioItem
-                    (onSelect)="onSelect.emit($event)"
-                    [value]="getItemValue(item)" 
-                    [readonly]="readonly"
-                    [disabled]="isItemDisabled(item)">
-                    <span class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="last" class="separator"></span>
-                </radio-item>
-                <span class="remove-button" [class.hidden]="!removeButton" (click)="removeItem(item)">×</span>
+            <div class="select-items-group" *ngFor="let group of getGroups()">
+                <div class="select-items-group-header" [hidden]="!group">
+                    <span class="select-items-label">{{ group }}</span>
+                </div>
+                <div class="select-items-group-item" 
+                    *ngFor="let item of getItems(group); let index = index; let last = last"
+                    #itemElement
+                    [class.active]="active === index"
+                    [class.hide-controls]="hideControls"
+                    [class.with-remove-button]="removeButton"
+                    [class.selected]="radioItem.isChecked()"
+                    class="select-items-item item">
+                    <radio-item #radioItem
+                        (onSelect)="onSelect.emit($event)"
+                        [value]="getItemValue(item)" 
+                        [readonly]="readonly"
+                        [disabled]="isItemDisabled(item)">
+                        <span class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="last" class="separator"></span>
+                    </radio-item>
+                    <span class="remove-button" [class.hidden]="!removeButton" (click)="removeItem(item)">×</span>
+                </div>
             </div>
         </radio-group>
     </div>
@@ -108,8 +128,27 @@ import {SelectValidator} from "./SelectValidator";
     background: #337ab7;
     color: #FFF;
 }
+.select-items .select-items-item.hide-controls.selected.active {
+    background: #7aaef2;
+    color: #FFF;
+}
+.select-items .select-items-item.active {
+    color: #495c68;
+    background-color: #f5fafd;
+}
 .select-items .select-items-label {
     padding-left: 3px;
+    padding-right: 3px;
+}
+.select-items .select-items-group-header {
+    font-weight: bold;
+    margin-top: 2px;
+}
+.select-items .select-items-group-header.select-all {
+    cursor: pointer;
+}
+.select-items .select-items-group-header input[type=checkbox] {
+    vertical-align: text-top;
 }
 .select-items .remove-button {
     font-size: 12px;
@@ -124,8 +163,8 @@ import {SelectValidator} from "./SelectValidator";
 .select-items .checkbox-item, .select-items .radio-item {
     display: inline;
 }
-.select-items .select-items-item.hide-controls .checkbox-item input[type=checkbox], 
-.select-items .select-items-item.hide-controls .radio-item input[type=radio] {
+.select-items .select-items-item.hide-controls input[type=checkbox], 
+.select-items .select-items-item.hide-controls input[type=radio] {
     display: none;
 }
 .select-items .more-button, .select-items .hide-button {
@@ -174,11 +213,14 @@ import {SelectValidator} from "./SelectValidator";
 export class SelectItems implements AfterViewInit {
 
     // -------------------------------------------------------------------------
-    // Inputs
+    // Inputs / Outputs
     // -------------------------------------------------------------------------
 
     @Input()
     items: any[];
+
+    @Output()
+    itemsChange = new EventEmitter();
 
     @Input()
     multiple: boolean;
@@ -196,6 +238,15 @@ export class SelectItems implements AfterViewInit {
     orderBy: string|((item1: any, item2: any) => number);
 
     @Input()
+    groupBy: string|((item1: any, item2: any) => number);
+
+    @Input()
+    groupSelectAll: boolean = false;
+
+    @Input()
+    hideGroupSelectAllCheckbox: boolean = false;
+
+    @Input()
     orderDirection: "asc"|"desc";
 
     @Input()
@@ -208,13 +259,13 @@ export class SelectItems implements AfterViewInit {
     readonly: boolean = false;
 
     @Input()
-    hideSelected: boolean;
+    hideSelected: boolean = false;
 
     @Input()
-    removeButton: boolean;
+    removeButton: boolean = false;
 
     @Input()
-    hideControls: boolean;
+    hideControls: boolean = false;
 
     @Input()
     searchLabel: string;
@@ -245,10 +296,10 @@ export class SelectItems implements AfterViewInit {
 
     @Output()
     onSelect = new EventEmitter<{ event: Event }>();
-    
+
     @Input()
     keyword: string;
-    
+
     // -------------------------------------------------------------------------
     // Input accessors
     // -------------------------------------------------------------------------
@@ -279,11 +330,14 @@ export class SelectItems implements AfterViewInit {
     get required() {
         return this.validator.options.required;
     }
-    
+
     // -------------------------------------------------------------------------
     // Public Properties
     // -------------------------------------------------------------------------
 
+    active: number = -1;
+    activeSelectAll: boolean = false;
+    activeNoSelection: boolean = false;
     isMoreShown: boolean = false;
     isMaxLimitReached: boolean = false;
 
@@ -313,12 +367,13 @@ export class SelectItems implements AfterViewInit {
 
     changeModel(model: any) {
         this.valueAccessor.set(model);
+        this.checkActive();
     }
 
     isMultiple() {
         if (this.multiple === undefined)
             return this.valueAccessor.model instanceof Array;
-        
+
         return this.multiple;
     }
 
@@ -374,9 +429,22 @@ export class SelectItems implements AfterViewInit {
         return item;
     }
 
-    getItems() {
+    getGroups() {
+        if (!this.groupBy)
+            return [undefined];
+
+        return this.getItems().map(item => {
+            if (typeof this.groupBy === "string") {
+                return item[this.groupBy as string];
+            } else {
+                return (this.groupBy as (item: any) => any)(item);
+            }
+        }).filter((item, index, items) => items.lastIndexOf(item) === index);
+    }
+
+    getItems(group?: any) {
         if (!this.items) return [];
-        
+
         let items = this.items.map(item => item);
         if (this.searchBy && this.keyword) {
             items = items.filter(item => {
@@ -431,9 +499,19 @@ export class SelectItems implements AfterViewInit {
             if (startFrom > 0 && !this.isMoreShown)
                 items.splice(startFrom * -1);
         }
-        
+
         if (this.filter)
             this.filter(items);
+
+        if (this.groupBy && group) {
+            items = items.filter(item => {
+                if (typeof this.groupBy === "string") {
+                    return item[this.groupBy as string] === group;
+                } else {
+                    return (this.groupBy as (item: any) => any)(item) === group;
+                }
+            });
+        }
 
         return items;
     }
@@ -441,6 +519,8 @@ export class SelectItems implements AfterViewInit {
     removeItem(item: any) {
         if (this.isItemDisabled(item)) return;
         this.items.splice(this.items.indexOf(item), 1);
+        this.itemsChange.emit(this.items);
+        this.checkActive();
     }
 
     showMore() {
@@ -451,15 +531,11 @@ export class SelectItems implements AfterViewInit {
         this.isMoreShown = false;
     }
 
-    selectAll() {
-        if (!this.isAllSelected(this.items)) {
-            this.items.forEach(item => {
-                this.valueAccessor.add(this.getItemValue(item));
-            });
+    selectAll(items: any[]) {
+        if (!this.isAllSelected(items)) {
+            items.forEach(item => this.valueAccessor.add(this.getItemValue(item)));
         } else {
-            this.items.forEach(item => {
-                this.valueAccessor.remove(this.getItemValue(item));
-            });
+            items.forEach(item => this.valueAccessor.remove(this.getItemValue(item)));
         }
     }
 
@@ -475,6 +551,76 @@ export class SelectItems implements AfterViewInit {
 
     resetModel() {
         this.valueAccessor.set(undefined);
+    }
+
+    previousActive() {
+        const items = this.getItems();
+        let newIndex = this.active - 1;
+        if (newIndex === -1) {
+            if (this.isMultiple() && this.selectAllLabel) {
+                this.activeSelectAll = true;
+                this.active = -1;
+            } else if (this.isMultiple() && this.noSelectionLabel) {
+                this.activeNoSelection = true;
+                this.active = -1;
+            } else {
+                newIndex = 0;
+            }
+        } else if (newIndex === -2 && !this.activeNoSelection && !this.activeSelectAll) {
+            this.active = items.length - 1;
+        }
+
+        if (newIndex !== -1) {
+            if (items[newIndex] !== null && items[newIndex] !== undefined) {
+                this.active = newIndex;
+            }
+        }
+    }
+
+    nextActive(): void {
+        const items = this.getItems();
+        const newIndex = this.active + 1;
+        if (this.activeNoSelection || this.activeSelectAll) {
+            this.activeNoSelection = this.activeSelectAll = false;
+        }
+        if (items[newIndex] !== null && items[newIndex] !== undefined) {
+            this.active = newIndex;
+        }
+    }
+
+    resetActive(): void {
+        this.active = -1;
+        this.activeNoSelection = false;
+        this.activeSelectAll = false;
+    }
+
+    selectActive() {
+        const items = this.getItems();
+        if (this.activeSelectAll) {
+            this.selectAll();
+
+        } else if (this.activeNoSelection) {
+            this.resetModel();
+
+        } else if (this.active > -1 && items[this.active]) {
+            if (this.isMultiple()) {
+                this.valueAccessor.addOrRemove(items[this.active]);
+            } else {
+                this.valueAccessor.set(items[this.active]);
+            }
+            this.checkActive();
+        }
+    }
+
+    checkActive(): void {
+        const items = this.getItems();
+        if (this.active > -1 && this.active >= items.length) {
+            this.active = items.length - 1;
+        }
+    }
+
+    hasActive(): boolean {
+        return !!this.activeNoSelection || !!this.activeSelectAll || this.active > -1;
     }
 
 }

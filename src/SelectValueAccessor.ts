@@ -66,7 +66,7 @@ export class SelectValueAccessor implements ControlValueAccessor {
     }
 
     remove(value: any) {
-        value = this.extractModelValue(value);
+        // value = this.extractModelValue(value);
         if (this.trackBy) {
             const item = this._model.find((i: any) => {
                 return this.extractValue(i, this.trackBy) === this.extractValue(value, this.trackBy);
@@ -113,7 +113,7 @@ export class SelectValueAccessor implements ControlValueAccessor {
     }
 
     has(value: any): boolean {
-        value = this.extractModelValue(value);
+        // value = this.extractModelValue(value);
         if (this._model instanceof Array) {
             if (this.trackBy) {
                 return !!this._model.find((i: any) => {

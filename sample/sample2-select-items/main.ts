@@ -149,8 +149,41 @@ import {Car} from "./Car";
     <h4>model: </h4>
     <pre>{{ selectedCarNames | json }}</pre>
     
-    <h4>All-in-one select items:</h4>
+    <h4>Select items with grouping:</h4>
     <select-items [(ngModel)]="selectedCars13"
+                  [items]="cars"
+                  groupBy="year"
+                  labelBy="name"
+                  valueBy="name">
+    </select-items>
+    <h4>model: </h4>
+    <pre>{{ selectedCars13 | json }}</pre>
+    
+    <h4>Select items with grouping and select-alls in groups:</h4>
+    <select-items [(ngModel)]="selectedCars14"
+                  [items]="cars"
+                  [groupSelectAll]="true"
+                  groupBy="year"
+                  labelBy="name"
+                  valueBy="name">
+    </select-items>
+    <h4>model: </h4>
+    <pre>{{ selectedCars14 | json }}</pre>
+    
+    <h4>Select items with grouping and select-alls in groups, but without a checkbox:</h4>
+    <select-items [(ngModel)]="selectedCars15"
+                  [items]="cars"
+                  [groupSelectAll]="true"
+                  [hideGroupSelectAllCheckbox]="true"
+                  groupBy="year"
+                  labelBy="name"
+                  valueBy="name">
+    </select-items>
+    <h4>model: </h4>
+    <pre>{{ selectedCars15 | json }}</pre>
+    
+    <h4>All-in-one select items:</h4>
+    <select-items [(ngModel)]="selectedCars16"
                   [items]="cars"
                   [removeButton]="true"
                   [hideControls]="false"
@@ -167,7 +200,7 @@ import {Car} from "./Car";
                   selectAllLabel="select all">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars13 | json }}</pre>
+    <pre>{{ selectedCars16 | json }}</pre>
     
     <!-- SAME WITH RADIO -->
     
@@ -325,6 +358,16 @@ import {Car} from "./Car";
     <h4>model: </h4>
     <pre>{{ allNewSelectedCars | json }}</pre>
     
+    <h4>Select items single with grouping:</h4>
+    <select-items [(ngModel)]="selectedCar"
+                  [items]="cars"
+                  groupBy="year"
+                  labelBy="name"
+                  valueBy="name">
+    </select-items>
+    <h4>model: </h4>
+    <pre>{{ selectedCar | json }}</pre>
+    
     <h4>All-in-one select items:</h4>
     <select-items [(ngModel)]="selectedCar"
                   [items]="cars"
@@ -358,7 +401,9 @@ export class Sample1App {
         new Car(2, "Mercedes", 1999),
         new Car(3, "Opel", 2008),
         new Car(4, "Porshe", 1940),
-        new Car(4, "Ferrari", 2000)
+        new Car(5, "Ferrari", 2000),
+        new Car(6, "Toyota", 2008),
+        new Car(7, "Nissan", 1940)
     ];
 
     selectedCars: Car[] = [];
@@ -375,6 +420,9 @@ export class Sample1App {
     selectedCars11: Car[] = [];
     selectedCars12: Car[] = [];
     selectedCars13: Car[] = [];
+    selectedCars14: Car[] = [];
+    selectedCars15: Car[] = [];
+    selectedCars16: Car[] = [];
     secondSelectedCars: Car[] = [
         new Car(2, "Mercedes", 1999)
     ];

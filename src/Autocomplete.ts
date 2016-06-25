@@ -53,6 +53,9 @@ import {SelectValidator} from "./SelectValidator";
 .autocomplete .autocomplete-dropdown {
     position: relative;
 }
+.autocomplete .autocomplete-input input {
+    width: 100%;
+}
 .autocomplete .autocomplete-dropdown-menu {
     position: absolute;
     top: 100%;
@@ -149,6 +152,9 @@ export class Autocomplete implements OnInit {
 
     @Input()
     persist: boolean = false;
+
+    @Input()
+    itemLabelBy: string|((item: any) => string);
 
     @Input()
     labelBy: string|((item: any) => string);
@@ -338,15 +344,16 @@ export class Autocomplete implements OnInit {
         return this.disabled;
     }
 
-    getItemLabel(item: any) {// todo: duplication
+    getItemLabel(item: any) {
         if (!item) return "";
-        
-        if (this.labelBy) {
-            if (typeof this.labelBy === "string") {
-                return item[this.labelBy as string];
+        const labelBy = this.valueBy ? this.itemLabelBy : (this.itemLabelBy || this.labelBy);
 
-            } else if (typeof this.labelBy === "function") {
-                return (this.labelBy as any)(item);
+        if (labelBy) {
+            if (typeof labelBy === "string") {
+                return item[labelBy as string];
+
+            } else if (typeof labelBy === "function") {
+                return (labelBy as any)(item);
             }
         }
 

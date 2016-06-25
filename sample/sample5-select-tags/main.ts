@@ -149,6 +149,40 @@ import {HTTP_PROVIDERS, Http} from "@angular/http";
                 
     <br/><b>model: </b>
     <pre>{{ selectedCars12 | json }}</pre>
+
+    <h4>Select Tags with select all option:</h4>
+    <select-tags [(ngModel)]="selectedCars13"
+                [persist]="true"
+                [loader]="loader"
+                selectAllLabel="select all"
+                labelBy="name"
+                trackBy="name"
+                placeholder="add cars..."></select-tags>
+                
+    <br/><b>model: </b>
+    <pre>{{ selectedCars13 | json }}</pre>
+
+    <h4>Select Tags with unique names:</h4>
+    <select-tags [(ngModel)]="selectedCars14"
+                [persist]="true"
+                [unique]="true"
+                [loader]="loader"
+                labelBy="name"
+                trackBy="name"></select-tags>
+                
+    <br/><b>model: </b>
+    <pre>{{ selectedCars14 | json }}</pre>
+
+    <h4>Select Tags readonly:</h4>
+    <select-tags [(ngModel)]="selectedCars15"
+                [persist]="true"
+                [readonly]="true"
+                [loader]="loader"
+                labelBy="name"
+                trackBy="name"></select-tags>
+                
+    <br/><b>model: </b>
+    <pre>{{ selectedCars15 | json }}</pre>
         
 </div>
 `,
@@ -180,6 +214,13 @@ export class Sample1App {
     selectedCars10: Car[] = [];
     selectedCars11: Car[] = [];
     selectedCars12: Car[] = [];
+    selectedCars13: Car[] = [];
+    selectedCars14: Car[] = [];
+    selectedCars15: Car[] = [
+        this.cars[0],
+        this.cars[1],
+        this.cars[2]
+    ];
 
     loader = (term: string) => {
         return this.http

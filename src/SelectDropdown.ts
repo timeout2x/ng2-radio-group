@@ -303,16 +303,17 @@ export class SelectDropdown {
 
         return this.valueAccessor.model instanceof Array;
     }
+    
+    getItemLabel(item: any) {// todo: duplication
+        if (!item) return "";
+        const labelBy = this.valueBy ? this.listLabelBy : (this.listLabelBy || this.labelBy);
 
-    getItemLabel(item: any) {
-        if (!item) return;
-        
-        if (this.labelBy) {
-            if (typeof this.labelBy === "string") {
-                return item[this.labelBy as string];
+        if (labelBy) {
+            if (typeof labelBy === "string") {
+                return item[labelBy as string];
 
-            } else if (typeof this.labelBy === "function") {
-                return (this.labelBy as any)(item);
+            } else if (typeof labelBy === "function") {
+                return (labelBy as any)(item);
             }
         }
 
