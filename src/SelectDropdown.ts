@@ -11,7 +11,8 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
     template: `
 <div class="select-dropdown">
     <div class="select-dropdown-dropdown dropdown" dropdown>
-        <div class="select-dropdown-box" tabindex="1" dropdown-open>
+        <div class="select-dropdown-box" tabindex="1"
+     (keydown)="onSelectTagsBoxKeydown($event)" dropdown-open>
             <div *ngIf="isMultiple()">
                 <span [class.hidden]="listSelectItems.getItems().length > 0">
                     <span class="no-selection" [class.readonly]="readonly" [class.disabled]="disabled">{{ readonly ? (readonlyLabel || label) : label }}</span>
@@ -112,6 +113,9 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
     color: #fff;
     background-color: #0095cc;
 }
+.select-dropdown .dropdown-menu .select-items .select-items-item.active.selected {
+    background-color: #469FE0;
+}
 .select-dropdown .select-dropdown-box .single-selected.disabled, 
 .select-dropdown .select-dropdown-box .no-selection.disabled {
     color: #CCC;
@@ -123,6 +127,9 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
     color: #333;
     border: none;
     cursor: default;
+}
+.select-dropdown .select-dropdown-box .select-items .select-items-label {
+    padding-right: 0;
 }
 .select-dropdown .select-dropdown-box .select-items .select-items-item .separator {
     padding-right: 2px;
@@ -285,6 +292,9 @@ export class SelectDropdown {
     @ViewChild(Dropdown)
     dropdown: Dropdown;
 
+    @ViewChild("dropdownSelectItems")
+    selectItems: SelectItems;
+
     // -------------------------------------------------------------------------
     // Constructor
     // -------------------------------------------------------------------------
@@ -324,6 +334,31 @@ export class SelectDropdown {
         if (!this.isMultiple()) {
             this.dropdown.close();
         }
+    }
+
+    /**
+     * When user keydowns on component we need to capture esc/enter/arrows to make possible keyboard management.
+     */
+    onSelectTagsBoxKeydown(event: KeyboardEvent) {
+        if (event.keyCode === 27 && this.dropdown.isOpened()) {
+            this.dropdown.close();
+
+        } else if (event.keyCode === 38) { // top
+            this.selectItems.previousActive();
+            event.preventDefault();
+            event.stopPropagation();
+
+        } else if (event.keyCode === 40) { // bottom
+            this.selectItems.nextActive();
+            event.preventDefault();
+            event.stopPropagation();
+
+        } else if (event.keyCode === 13 || event.keyCode === 32) { // enter or space
+            this.selectItems.selectActive();
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
     }
 
 }

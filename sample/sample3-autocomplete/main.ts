@@ -3,6 +3,7 @@ import {Component} from "@angular/core";
 import {SELECT_DIRECTIVES} from "../../src/index";
 import {Car} from "./Car";
 import {HTTP_PROVIDERS, Http} from "@angular/http";
+import {Observable} from "rxjs/Rx";
 
 @Component({
     selector: "app",
@@ -192,7 +193,7 @@ export class Sample1App {
     loader = (term: string) => {
         return this.http
             .get("http://localhost:4000/tags/search?query=" + term)
-            .map(res => res.json());
+            .map(res => res.json()) as Observable<any>;
     };
 
     itemConstructor = (term: string) => {

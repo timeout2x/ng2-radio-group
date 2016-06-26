@@ -8,6 +8,7 @@ export * from "./SelectItems";
 export * from "./Autocomplete";
 export * from "./SelectDropdown";
 export * from "./SelectTags";
+export * from "./ItemTemplate";
 
 import {Checkbox} from "./Checkbox";
 import {CheckboxItem} from "./CheckboxItem";
@@ -19,6 +20,7 @@ import {SelectItems} from "./SelectItems";
 import {Autocomplete} from "./Autocomplete";
 import {SelectDropdown} from "./SelectDropdown";
 import {SelectTags} from "./SelectTags";
+import {ItemTemplate} from "./ItemTemplate";
 
 export const SELECT_DIRECTIVES: [any] = [
     CheckboxGroup,
@@ -30,5 +32,6 @@ export const SELECT_DIRECTIVES: [any] = [
     SelectItems, 
     Autocomplete,
     SelectDropdown,
-    SelectTags
+    SelectTags,
+    ItemTemplate
 ];

@@ -1,9 +1,9 @@
 import "rxjs/Rx";
-import {Component, Input, forwardRef, Provider, ViewEncapsulation, OnInit, ViewChild, ElementRef} from "@angular/core";
-import {NG_VALIDATORS, NG_VALUE_ACCESSOR, Validator, ControlValueAccessor, Control} from "@angular/common";
+import {Component, Input, Provider, ViewEncapsulation, OnInit, ViewChild, ElementRef} from "@angular/core";
+import {NG_VALIDATORS, NG_VALUE_ACCESSOR, Control} from "@angular/common";
 import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES} from "ng2-dropdown";
-import {Observable} from "rxjs/Rx";
+import {Observable, Subscription} from "rxjs/Rx";
 import {WidthCalculator} from "./WidthCalculator";
 import {SelectValidator} from "./SelectValidator";
 import {SelectValueAccessor} from "./SelectValueAccessor";
@@ -19,7 +19,7 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
             (keydown)="onSelectTagsBoxKeydown($event)"
             tabindex="1" 
             class="select-tags-box">
-            <select-items #boxSelectItems
+            <select-items #tagSelectItems
                 [(ngModel)]="selectedItems"
                 [hideControls]="true"
                 [removeButton]="removeButton && !readonly"
@@ -72,7 +72,8 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
                 [orderBy]="orderBy"
                 [orderDirection]="orderDirection"
                 [selectAllLabel]="selectAllLabel"
-                [disableBy]="disableBy"></select-items>
+                [disableBy]="disableBy">
+            </select-items>
         </div>
     </div>
 </div>`,
@@ -135,6 +136,7 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
     outline: 1px solid #CCC;
 }
 .select-tags .select-tags-box .select-items,
+.select-tags .select-tags-box .select-items .select-items-group,
 .select-tags .select-tags-box .select-items .select-items-multiple,
 .select-tags .select-tags-box .select-items .select-items-single,
 .select-tags .select-tags-box .select-items .radio-group,
@@ -418,14 +420,14 @@ export class SelectTags implements OnInit {
     lastLoadTerm: string = "";
     selectedItems: any[] = [];
 
+    @ViewChild("dropdownSelectItems")
+    dropdownSelectItems: SelectItems;
+
     @ViewChild("selectTagsBoxInput")
     selectTagsBoxInput: ElementRef;
 
-    @ViewChild("boxSelectItems")
-    boxSelectItems: SelectItems;
-
-    @ViewChild("dropdownSelectItems")
-    dropdownSelectItems: SelectItems;
+    @ViewChild("tagSelectItems")
+    tagSelectItems: SelectItems;
 
     @ViewChild("selectTagsBox")
     selectTagsBox: ElementRef;
@@ -501,7 +503,7 @@ export class SelectTags implements OnInit {
     /**
      * Load items using loader.
      */
-    load() {
+    load(): Subscription {
         if (this.readonly || !this.loader || this.originalModel || !this.term || this.term.length < this.minQueryLength || this.term === this.lastLoadTerm)
             return;
 
@@ -641,7 +643,7 @@ export class SelectTags implements OnInit {
      * Moves input to the right.
      */
     moveRight() {
-        if (this.cursorPosition >= this.boxSelectItems.itemElements.toArray().length) return;
+        if (this.cursorPosition >= this.tagSelectItems.itemElements.toArray().length) return;
         ++this.cursorPosition;
         this.move();
     }
@@ -713,7 +715,7 @@ export class SelectTags implements OnInit {
      * Moves input box into cursorPosition.
      */
     private move() {
-        const items = this.boxSelectItems.itemElements.toArray();
+        const items = this.tagSelectItems.itemElements.toArray();
         const input = this.selectTagsBoxInput.nativeElement;
         if (items[this.cursorPosition]) {
             const element = items[this.cursorPosition].nativeElement;

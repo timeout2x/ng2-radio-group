@@ -2,6 +2,7 @@ import {bootstrap} from "@angular/platform-browser-dynamic";
 import {Component} from "@angular/core";
 import {SELECT_DIRECTIVES} from "../../src/index";
 import {Car} from "./Car";
+import {ItemTemplate} from "../../src/ItemTemplate";
 
 @Component({
     selector: "app",
@@ -182,8 +183,37 @@ import {Car} from "./Car";
     <h4>model: </h4>
     <pre>{{ selectedCars15 | json }}</pre>
     
+    <h4>Select items with custom item template:</h4>
+    <select-items #selectItems
+                  [(ngModel)]="selectedCars17"
+                  [items]="cars"
+                  labelBy="name">
+        <span *ngFor="let item of selectItems.getItems()">
+           <span *itemTemplate="item">
+                #{{ item.id }} <b>{{ item.name }}</b> <i>({{ item.year }})</i>
+            </span>          
+        </span>
+    </select-items>
+    <h4>model: </h4>
+    <pre>{{ selectedCars17 | json }}</pre>
+    
+    <h4>Select items with custom item template and hidden controls:</h4>
+    <select-items #secondSelectItems
+                  [(ngModel)]="selectedCars17"
+                  [items]="cars"
+                  [hideControls]="true"
+                  labelBy="name">
+        <span *ngFor="let item of secondSelectItems.getItems()">
+           <span *itemTemplate="item">
+                #{{ item.id }} <b>{{ item.name }}</b> <i>({{ item.year }})</i>
+            </span>          
+        </span>
+    </select-items>
+    <h4>model: </h4>
+    <pre>{{ selectedCars17 | json }}</pre>
+    
     <h4>All-in-one select items:</h4>
-    <select-items [(ngModel)]="selectedCars16"
+    <select-items [(ngModel)]="selectedCars18"
                   [items]="cars"
                   [removeButton]="true"
                   [hideControls]="false"
@@ -200,7 +230,7 @@ import {Car} from "./Car";
                   selectAllLabel="select all">
     </select-items>
     <h4>model: </h4>
-    <pre>{{ selectedCars16 | json }}</pre>
+    <pre>{{ selectedCars18 | json }}</pre>
     
     <!-- SAME WITH RADIO -->
     
@@ -423,6 +453,9 @@ export class Sample1App {
     selectedCars14: Car[] = [];
     selectedCars15: Car[] = [];
     selectedCars16: Car[] = [];
+    selectedCars17: Car[] = [];
+    selectedCars18: Car[] = [];
+    selectedCars19: Car[] = [];
     secondSelectedCars: Car[] = [
         new Car(2, "Mercedes", 1999)
     ];

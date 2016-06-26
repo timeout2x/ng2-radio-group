@@ -10,7 +10,8 @@ import {
     ViewChildren,
     QueryList,
     Output,
-    EventEmitter
+    EventEmitter,
+    ContentChildren
 } from "@angular/core";
 import {NG_VALIDATORS, NG_VALUE_ACCESSOR} from "@angular/common";
 import {CheckboxGroup} from "./CheckboxGroup";
@@ -19,6 +20,7 @@ import {RadioItem} from "./RadioItem";
 import {CheckboxItem} from "./CheckboxItem";
 import {SelectValueAccessor} from "./SelectValueAccessor";
 import {SelectValidator} from "./SelectValidator";
+import {ItemTemplate, ItemTemplateTransclude} from "./ItemTemplate";
 
 @Component({
     selector: "select-items",
@@ -60,7 +62,8 @@ import {SelectValidator} from "./SelectValidator";
                         [value]="getItemValue(item)" 
                         [readonly]="readonly"
                         [disabled]="isItemDisabled(item)">
-                        <span class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="last" class="separator"></span>
+                        <span [class.hidden]="!itemTemplates || !itemTemplates.length" [itemTemplateTransclude]="itemTemplates" [item]="item"></span>
+                        <span [class.hidden]="itemTemplates && itemTemplates.length" class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="(itemTemplates && itemTemplates.length) || last" class="separator"></span>
                     </checkbox-item>
                     <span class="remove-button" 
                           [class.hidden]="!removeButton" (click)="removeItem(item)">×</span>
@@ -96,7 +99,8 @@ import {SelectValidator} from "./SelectValidator";
                         [value]="getItemValue(item)" 
                         [readonly]="readonly"
                         [disabled]="isItemDisabled(item)">
-                        <span class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="last" class="separator"></span>
+                        <span [class.hidden]="!itemTemplates || !itemTemplates.length" [itemTemplateTransclude]="itemTemplates" [item]="item"></span>
+                        <span [class.hidden]="itemTemplates && itemTemplates.length"  class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="(itemTemplates && itemTemplates.length) || last" class="separator"></span>
                     </radio-item>
                     <span class="remove-button" [class.hidden]="!removeButton" (click)="removeItem(item)">×</span>
                 </div>
@@ -128,8 +132,8 @@ import {SelectValidator} from "./SelectValidator";
     background: #337ab7;
     color: #FFF;
 }
-.select-items .select-items-item.hide-controls.selected.active {
-    background: #7aaef2;
+.select-items .select-items-item.selected.active {
+    background: #469FE0;
     color: #FFF;
 }
 .select-items .select-items-item.active {
@@ -195,7 +199,7 @@ import {SelectValidator} from "./SelectValidator";
 `],
     encapsulation: ViewEncapsulation.None,
     directives: [
-        RadioGroup, RadioItem, CheckboxGroup, CheckboxItem
+        RadioGroup, RadioItem, CheckboxGroup, CheckboxItem, ItemTemplateTransclude
     ],
     providers: [
         SelectValueAccessor,
@@ -343,6 +347,9 @@ export class SelectItems implements AfterViewInit {
 
     @ViewChildren("itemElement")
     itemElements: QueryList<ElementRef>;
+
+    @ContentChildren(ItemTemplate)
+    itemTemplates: QueryList<ItemTemplate>;
 
     // -------------------------------------------------------------------------
     // Constructor
@@ -560,7 +567,7 @@ export class SelectItems implements AfterViewInit {
             if (this.isMultiple() && this.selectAllLabel) {
                 this.activeSelectAll = true;
                 this.active = -1;
-            } else if (this.isMultiple() && this.noSelectionLabel) {
+            } else if (!this.isMultiple() && this.noSelectionLabel) {
                 this.activeNoSelection = true;
                 this.active = -1;
             } else {
@@ -597,7 +604,7 @@ export class SelectItems implements AfterViewInit {
     selectActive() {
         const items = this.getItems();
         if (this.activeSelectAll) {
-            this.selectAll();
+            this.selectAll(items);
 
         } else if (this.activeNoSelection) {
             this.resetModel();

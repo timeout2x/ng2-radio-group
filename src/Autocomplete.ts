@@ -1,9 +1,9 @@
 import "rxjs/Rx";
-import {Component, Input, forwardRef, Provider, ViewEncapsulation, OnInit, ViewChild} from "@angular/core";
-import {NG_VALIDATORS, NG_VALUE_ACCESSOR, Validator, ControlValueAccessor, Control} from "@angular/common";
+import {Component, Input, forwardRef, Provider, ViewEncapsulation, OnInit} from "@angular/core";
+import {NG_VALIDATORS, NG_VALUE_ACCESSOR, Control} from "@angular/common";
 import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES} from "ng2-dropdown";
-import {Observable} from "rxjs/Rx";
+import {Observable, Subscription} from "rxjs/Rx";
 import {SelectValueAccessor} from "./SelectValueAccessor";
 import {SelectValidator} from "./SelectValidator";
 
@@ -290,7 +290,7 @@ export class Autocomplete implements OnInit {
     // Public Methods
     // -------------------------------------------------------------------------
 
-    load() {
+    load(): Subscription {
         if (!this.loader || this.originalModel || !this.term || this.term.length < this.minQueryLength || this.term === this.lastLoadTerm)
             return;
 
