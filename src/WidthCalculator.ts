@@ -27,7 +27,6 @@ export class WidthCalculator {
         let measureContainer = this.createInputStringMeasureContainer(input);
         let width = this.measureString(value, measureContainer) + 10;
         input.style.setProperty("width", width + "px");
-        // input.trig("resize");
     }
 
     /**

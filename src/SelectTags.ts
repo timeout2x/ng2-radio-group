@@ -13,7 +13,8 @@ import {Utils} from "./Utils";
     selector: "select-tags",
     template: `
 <div class="select-tags"
-     [class.disabled]="disabled">
+     [class.disabled]="disabled"
+     [class.readonly]="readonly">
     <div class="select-tags-dropdown dropdown" dropdown [dropdownToggle]="false">
         <div #selectTagsBox
             (click)="focusTagsInput()" 
@@ -260,6 +261,12 @@ import {Utils} from "./Utils";
     box-shadow: none;
     text-shadow: none;
 }
+.select-tags.readonly .select-tags-input {
+    display: none;
+}
+.select-tags.readonly .select-tags-box .select-items .select-items-item {
+    cursor: default;
+}
 `],
     encapsulation: ViewEncapsulation.None,
     directives: [
@@ -271,14 +278,8 @@ import {Utils} from "./Utils";
         SelectValueAccessor,
         SelectValidator,
         WidthCalculator,
-        new Provider(NG_VALUE_ACCESSOR, {
-            useExisting: SelectValueAccessor,
-            multi: true
-        }),
-        new Provider(NG_VALIDATORS, {
-            useExisting: SelectValidator,
-            multi: true
-        })
+        { provide: NG_VALUE_ACCESSOR, useExisting: SelectValueAccessor, multi: true },
+        { provide: NG_VALIDATORS, useExisting: SelectValidator, multi: true }
     ]
 })
 export class SelectTags implements OnInit {

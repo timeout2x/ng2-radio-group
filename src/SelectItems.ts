@@ -204,14 +204,8 @@ import {ItemTemplate, ItemTemplateTransclude} from "./ItemTemplate";
     providers: [
         SelectValueAccessor,
         SelectValidator,
-        new Provider(NG_VALUE_ACCESSOR, {
-            useExisting: SelectValueAccessor,
-            multi: true
-        }),
-        new Provider(NG_VALIDATORS, {
-            useExisting: SelectValidator,
-            multi: true
-        })
+        { provide: NG_VALUE_ACCESSOR, useExisting: SelectValueAccessor, multi: true },
+        { provide: NG_VALIDATORS, useExisting: SelectValidator, multi: true }
     ]
 })
 export class SelectItems implements AfterViewInit {
