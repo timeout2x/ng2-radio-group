@@ -53,7 +53,8 @@ import {provideForms, disableDeprecatedForms} from "@angular/forms";
     <select-items [(ngModel)]="selectedCars4"
                   [items]="cars"
                   labelBy="name"
-                  selectAllLabel="select all">
+                  [selectAll]="true"
+                  selectAllLabel="select all"> <!-- label is optional -->
     </select-items>
     <h4>model: </h4>
     <pre>{{ selectedCars4 | json }}</pre>
@@ -189,7 +190,7 @@ import {provideForms, disableDeprecatedForms} from "@angular/forms";
                   [(ngModel)]="selectedCars17"
                   [items]="cars"
                   labelBy="name">
-        <span *ngFor="let item of selectItems.getItems()">
+        <span *ngFor="let item of selectItems.displayedItems">
            <span *itemTemplate="item">
                 #{{ item.id }} <b>{{ item.name }}</b> <i>({{ item.year }})</i>
             </span>          
@@ -204,7 +205,7 @@ import {provideForms, disableDeprecatedForms} from "@angular/forms";
                   [items]="cars"
                   [hideControls]="true"
                   labelBy="name">
-        <span *ngFor="let item of secondSelectItems.getItems()">
+        <span *ngFor="let item of secondSelectItems.displayedItems">
            <span *itemTemplate="item">
                 #{{ item.id }} <b>{{ item.name }}</b> <i>({{ item.year }})</i>
             </span>          
@@ -228,6 +229,7 @@ import {provideForms, disableDeprecatedForms} from "@angular/forms";
                   orderDirection="desc"
                   moreLabel="more"
                   hideLabel="hide"
+                  [selectAll]="true"
                   selectAllLabel="select all">
     </select-items>
     <h4>model: </h4>
@@ -282,6 +284,7 @@ import {provideForms, disableDeprecatedForms} from "@angular/forms";
     <select-items [(ngModel)]="selectedCar"
                   [items]="cars"
                   labelBy="name"
+                  [noSelection]="true"
                   noSelectionLabel="nothing is selected">
     </select-items>
     <h4>model: </h4>
@@ -415,6 +418,7 @@ import {provideForms, disableDeprecatedForms} from "@angular/forms";
                   orderDirection="desc"
                   moreLabel="more"
                   hideLabel="hide"
+                  [selectAll]="true"
                   selectAllLabel="select all">
     </select-items>
     <h4>model: </h4>

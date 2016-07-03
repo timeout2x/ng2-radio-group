@@ -11,10 +11,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/pleerock/ng2-radio-group.git"
+    "url": "https://github.com/pleerock/ng2-select-controls.git"
   },
   "bugs": {
-    "url": "https://github.com/pleerock/ng2-radio-group/issues"
+    "url": "https://github.com/pleerock/ng2-select-controls/issues"
   },
   "tags": [
     "checkbox-group",
@@ -45,7 +45,8 @@
     "angular2-dropdown-select"
   ],
   "peerDependencies": {
-    "@angular/core": "^2.0.0-rc.1"
+    "@angular/core": "^2.0.0-rc.1",
+    "@angular/forms": "^0.2.0"
   },
   "devDependencies": {
     "@angular/common": "^2.0.0-rc.4",

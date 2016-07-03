@@ -1,12 +1,32 @@
 import "rxjs/Rx";
-import {Component, Input, forwardRef, Provider, ViewEncapsulation, OnInit, ViewChild} from "@angular/core";
-import {NG_VALIDATORS, NG_VALUE_ACCESSOR, AbstractControl} from "@angular/forms";
+import {
+    Component,
+    Input,
+    ViewEncapsulation,
+    OnInit,
+    Directive,
+    ContentChildren,
+    QueryList,
+    ContentChild
+} from "@angular/core";
+import {NG_VALIDATORS, NG_VALUE_ACCESSOR} from "@angular/forms";
 import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES} from "ng2-dropdown";
 import {Observable, Subscription} from "rxjs/Rx";
 import {SelectValueAccessor} from "./SelectValueAccessor";
 import {SelectValidator} from "./SelectValidator";
 import {Utils} from "./Utils";
+import {ItemTemplate} from "./ItemTemplate";
+
+@Directive({
+    selector: "autocomplete-dropdown-template"
+})
+export class AutocompleteDropdownTemplate {
+
+    @ContentChildren(ItemTemplate)
+    itemTemplates: QueryList<ItemTemplate>;
+
+}
 
 @Component({
     selector: "autocomplete",
@@ -43,7 +63,8 @@ import {Utils} from "./Utils";
                 [limit]="limit"
                 [orderBy]="orderBy"
                 [orderDirection]="orderDirection"
-                [disableBy]="disableBy"></select-items>
+                [disableBy]="disableBy"
+                [customItemTemplates]="dropdownTemplate?.itemTemplates"></select-items>
         </div>
     </div>
 </div>`,
@@ -224,6 +245,9 @@ export class Autocomplete implements OnInit {
     lastLoadTerm: string = "";
     items: any[] = [];
 
+    @ContentChild(AutocompleteDropdownTemplate)
+    dropdownTemplate: AutocompleteDropdownTemplate;
+
     // -------------------------------------------------------------------------
     // Private Properties
     // -------------------------------------------------------------------------
@@ -266,6 +290,10 @@ export class Autocomplete implements OnInit {
     // Public Methods
     // -------------------------------------------------------------------------
 
+    get dropdownItems() {
+        return this.items;
+    }
+    
     onTermChange(term: string) {
 
         // if persist mode is set then create a new object

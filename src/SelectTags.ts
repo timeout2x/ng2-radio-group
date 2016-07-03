@@ -14,9 +14,9 @@ import {Utils} from "./Utils";
 import {ItemTemplate} from "./ItemTemplate";
 
 @Directive({
-    selector: "select-dropdown-template"
+    selector: "select-tags-dropdown-template"
 })
-export class SelectDropdownTemplate {
+export class SelectTagsDropdownTemplate {
 
     @ContentChildren(ItemTemplate)
     itemTemplates: QueryList<ItemTemplate>;
@@ -24,9 +24,9 @@ export class SelectDropdownTemplate {
 }
 
 @Directive({
-    selector: "select-tags-template"
+    selector: "select-tags-box-template"
 })
-export class SelectTagsTemplate {
+export class SelectTagsBoxTemplate {
 
     @ContentChildren(ItemTemplate)
     itemTemplates: QueryList<ItemTemplate>;
@@ -467,11 +467,11 @@ export class SelectTags implements OnInit {
     @ViewChild("selectTagsBox")
     selectTagsBox: ElementRef;
 
-    @ContentChild(SelectDropdownTemplate)
-    selectDropdownTemplate: SelectDropdownTemplate;
+    @ContentChild(SelectTagsDropdownTemplate)
+    selectDropdownTemplate: SelectTagsDropdownTemplate;
 
-    @ContentChild(SelectTagsTemplate)
-    selectTagsTemplate: SelectTagsTemplate;
+    @ContentChild(SelectTagsBoxTemplate)
+    selectTagsTemplate: SelectTagsBoxTemplate;
 
     selectItemsToggleLogic = (options: { event: MouseEvent, valueAccessor: SelectValueAccessor, value: any }) => {
         if (options.event.metaKey || options.event.shiftKey || options.event.ctrlKey) {
@@ -752,14 +752,14 @@ export class SelectTags implements OnInit {
     /**
      * Exposes items in the dropdown, so they can be customized.
      */
-    getDropdownItems() {
+    get dropdownItems() {
         return this.items;
     }
 
     /**
      * Exposes items in the tags box, so they can be customized.
      */
-    getTagsItems() {
+    get tagsItems() {
         return this.valueAccessor.model;
     }
 

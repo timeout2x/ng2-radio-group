@@ -163,6 +163,26 @@ import {disableDeprecatedForms, provideForms} from "@angular/forms";
                     
         <b>model: </b>
         <pre>{{ selectedCars10 | json }}</pre>
+    
+        <h4>Autocomplete with custom template:</h4>
+        <autocomplete #autocomplete
+                    [(ngModel)]="selectedCars11" 
+                    [loader]="loader"
+                    labelBy="name"
+                    trackBy="name"
+                    [persist]="true"
+                    [itemConstructor]="itemConstructor">
+             <autocomplete-dropdown-template>
+                <span *ngFor="let item of autocomplete.dropdownItems">
+                   <span *itemTemplate="item">
+                        {{ item.name }} <i><small>({{ item.owner.login }})</small></i>
+                    </span>
+                </span>
+             </autocomplete-dropdown-template>
+        </autocomplete>
+                    
+        <b>model: </b>
+        <pre>{{ selectedCars11 | json }}</pre>
         
 </div>
 `,
@@ -187,6 +207,7 @@ export class Sample1App {
     selectedCars8: Car[] = [];
     selectedCars9: Car[] = [];
     selectedCars10: Car[] = [];
+    selectedCars11: Car[] = [];
     selectedCar: Car;
     selectedCar2: Car;
     newSelectedCar: Car = new Car(1, "BMW", 2000);

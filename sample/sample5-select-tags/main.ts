@@ -194,22 +194,22 @@ import {provideForms, disableDeprecatedForms} from "@angular/forms";
                 placeholder="add cars...">
                     
         <!-- you can specify custom template for the "tag items" this way: -->
-        <select-tags-template>
-            <span *ngFor="let item of selectTags.getTagsItems()">
+        <select-tags-box-template>
+            <span *ngFor="let item of selectTags.tagsItems">
                <span *itemTemplate="item">
-                    #{{ item.id }} <b>{{ item.name }}</b> <i>({{ item.year }})</i>
+                    {{ item.name }} <i><small>({{ item.year }})</small></i>
                 </span>          
             </span>
-        </select-tags-template>
+        </select-tags-box-template>
         
         <!-- you can specify custom template for the "dropdown items" this way: -->
-        <select-dropdown-template>
-            <span *ngFor="let item of selectTags.getDropdownItems()">
+        <select-tags-dropdown-template>
+            <span *ngFor="let item of selectTags.dropdownItems">
                <span *itemTemplate="item">
                     #{{ item.id }} <b>{{ item.name }}</b> <i>({{ item.year }})</i>
                 </span>          
             </span>
-        </select-dropdown-template>
+        </select-tags-dropdown-template>
         
     </select-tags>
                 

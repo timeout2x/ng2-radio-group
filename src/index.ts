@@ -17,9 +17,9 @@ import {RadioBox} from "./RadioBox";
 import {RadioItem} from "./RadioItem";
 import {RadioGroup} from "./RadioGroup";
 import {SelectItems} from "./SelectItems";
-import {Autocomplete} from "./Autocomplete";
+import {Autocomplete, AutocompleteDropdownTemplate} from "./Autocomplete";
 import {SelectDropdown} from "./SelectDropdown";
-import {SelectTags, SelectDropdownTemplate, SelectTagsTemplate} from "./SelectTags";
+import {SelectTags, SelectTagsDropdownTemplate, SelectTagsBoxTemplate} from "./SelectTags";
 import {ItemTemplate} from "./ItemTemplate";
 
 export const SELECT_DIRECTIVES: [any] = [
@@ -34,6 +34,7 @@ export const SELECT_DIRECTIVES: [any] = [
     SelectDropdown,
     SelectTags,
     ItemTemplate,
-    SelectDropdownTemplate,
-    SelectTagsTemplate
+    SelectTagsDropdownTemplate,
+    SelectTagsBoxTemplate,
+    AutocompleteDropdownTemplate
 ];

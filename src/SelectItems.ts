@@ -9,7 +9,7 @@ import {
     QueryList,
     Output,
     EventEmitter,
-    ContentChildren
+    ContentChildren, Optional
 } from "@angular/core";
 import {NG_VALIDATORS, NG_VALUE_ACCESSOR} from "@angular/forms";
 import {CheckboxGroup} from "./CheckboxGroup";
@@ -19,30 +19,31 @@ import {CheckboxItem} from "./CheckboxItem";
 import {SelectValueAccessor} from "./SelectValueAccessor";
 import {SelectValidator} from "./SelectValidator";
 import {ItemTemplate, ItemTemplateTransclude} from "./ItemTemplate";
+import {SelectControlsOptions} from "./SelectControlsOptions";
 
 @Component({
     selector: "select-items",
     template: `
 <div class="select-items">
-    <div [class.hidden]="!searchBy || !searchLabel">
-        <input class="select-items-search" type="text" [(ngModel)]="keyword" [placeholder]="searchLabel">
+    <div [class.hidden]="!searchBy">
+        <input class="select-items-search" type="text" [(ngModel)]="keyword" [placeholder]="getSearchLabel()">
     </div>
     <div class="select-items-multiple" *ngIf="isMultiple()">
         <div class="select-items-item select-all" 
-            (click)="selectAll(getItems())" 
-            [ngStyle]="{ display: ((searchBy && searchLabel && keyword) || !selectAllLabel || !getItems().length) ? 'none' : 'block' }"
+            (click)="selectAllItems(getItems())" 
+            [ngStyle]="{ display: ((searchBy && keyword) || !selectAll || !getItems().length) ? 'none' : 'block' }"
             [class.hide-controls]="hideControls"
             [class.active]="activeSelectAll"
             [class.selected]="isAllSelected(getItems())">
             <input type="checkbox" [checked]="isAllSelected(getItems())">
-            <span class="select-items-label">{{ selectAllLabel }}</span>
+            <span class="select-items-label">{{ getSelectAllLabel() }}</span>
         </div>
         <checkbox-group [(ngModel)]="valueAccessor.model" (ngModelChange)="changeModel($event)" [trackBy]="trackBy" [customToggleLogic]="customToggleLogic">
             <div class="select-items-group" *ngFor="let group of getGroups()">
                 <div class="select-items-group-header"
                     [class.select-all]="groupSelectAll"
                     [hidden]="!group" 
-                    (click)="groupSelectAll ? selectAll(getItems(group)) : 0">
+                    (click)="groupSelectAll ? selectAllItems(getItems(group)) : 0">
                     <input type="checkbox" 
                            [hidden]="!groupSelectAll || hideGroupSelectAllCheckbox"
                            [checked]="isAllSelected(getItems(group))">
@@ -72,12 +73,12 @@ import {ItemTemplate, ItemTemplateTransclude} from "./ItemTemplate";
     <div class="select-items-single" *ngIf="!isMultiple()">
         <div class="select-items-item no-selection" 
             [class.hide-controls]="hideControls"
-            [class.hidden]="!noSelectionLabel"
+            [class.hidden]="!noSelection"
             (click)="resetModel()"
             [class.active]="activeNoSelection"
             [class.selected]="!valueAccessor.model">
             <input type="radio" [checked]="!valueAccessor.model">
-            <span class="select-items-label">{{ noSelectionLabel }}</span>
+            <span class="select-items-label">{{ getNoSelectionLabel() }}</span>
         </div>
         <radio-group [(ngModel)]="valueAccessor.model" (ngModelChange)="changeModel($event)" [trackBy]="trackBy">
             <div class="select-items-group" *ngFor="let group of getGroups()">
@@ -273,7 +274,13 @@ export class SelectItems implements AfterViewInit {
     hideLabel: string;
 
     @Input()
+    selectAll: boolean = false;
+
+    @Input()
     selectAllLabel: string;
+
+    @Input()
+    noSelection: boolean = false;
 
     @Input()
     noSelectionLabel: string;
@@ -352,7 +359,8 @@ export class SelectItems implements AfterViewInit {
 
     constructor(private cdr: ChangeDetectorRef,
                 public valueAccessor: SelectValueAccessor,
-                private validator: SelectValidator) {
+                private validator: SelectValidator,
+                @Optional() private defaultOptions: SelectControlsOptions) {
     }
 
     // -------------------------------------------------------------------------
@@ -366,6 +374,10 @@ export class SelectItems implements AfterViewInit {
     // -------------------------------------------------------------------------
     // Public Methods
     // -------------------------------------------------------------------------
+    
+    get displayedItems() {
+        return this.getItems();
+    }
     
     getItemTemplates() {
         if (this.customItemTemplates)
@@ -540,7 +552,7 @@ export class SelectItems implements AfterViewInit {
         this.isMoreShown = false;
     }
 
-    selectAll(items: any[]) {
+    selectAllItems(items: any[]) {
         if (!this.isAllSelected(items)) {
             items.forEach(item => this.valueAccessor.add(this.getItemValue(item)));
         } else {
@@ -606,7 +618,7 @@ export class SelectItems implements AfterViewInit {
     selectActive() {
         const items = this.getItems();
         if (this.activeSelectAll) {
-            this.selectAll(items);
+            this.selectAllItems(items);
 
         } else if (this.activeNoSelection) {
             this.resetModel();
@@ -630,6 +642,36 @@ export class SelectItems implements AfterViewInit {
 
     hasActive(): boolean {
         return !!this.activeNoSelection || !!this.activeSelectAll || this.active > -1;
+    }
+
+    getSearchLabel() {
+        if (this.searchLabel !== undefined)
+            return this.searchLabel;
+        
+        if (this.defaultOptions && this.defaultOptions.searchLabel !== undefined)
+            return this.defaultOptions.searchLabel;
+        
+        return "";
+    }
+
+    getSelectAllLabel() {
+        if (this.selectAllLabel !== undefined)
+            return this.selectAllLabel;
+        
+        if (this.defaultOptions && this.defaultOptions.selectAllLabel !== undefined)
+            return this.defaultOptions.selectAllLabel;
+        
+        return "select all";
+    }
+
+    getNoSelectionLabel() {
+        if (this.noSelectionLabel !== undefined)
+            return this.noSelectionLabel;
+
+        if (this.defaultOptions && this.defaultOptions.noSelectionLabel !== undefined)
+            return this.defaultOptions.noSelectionLabel;
+
+        return "no selection";
     }
 
 }
