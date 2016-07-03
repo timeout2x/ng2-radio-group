@@ -185,7 +185,37 @@ import {provideForms, disableDeprecatedForms} from "@angular/forms";
                 
     <br/><b>model: </b>
     <pre>{{ selectedCars15 | json }}</pre>
+
+    <h4>Select Tags with custom templates:</h4>
+    <select-tags #selectTags 
+                [(ngModel)]="selectedCars16" 
+                [items]="cars"
+                labelBy="name"
+                placeholder="add cars...">
+                    
+        <!-- you can specify custom template for the "tag items" this way: -->
+        <select-tags-template>
+            <span *ngFor="let item of selectTags.getTagsItems()">
+               <span *itemTemplate="item">
+                    #{{ item.id }} <b>{{ item.name }}</b> <i>({{ item.year }})</i>
+                </span>          
+            </span>
+        </select-tags-template>
         
+        <!-- you can specify custom template for the "dropdown items" this way: -->
+        <select-dropdown-template>
+            <span *ngFor="let item of selectTags.getDropdownItems()">
+               <span *itemTemplate="item">
+                    #{{ item.id }} <b>{{ item.name }}</b> <i>({{ item.year }})</i>
+                </span>          
+            </span>
+        </select-dropdown-template>
+        
+    </select-tags>
+                
+    <br/><b>model: </b>
+    <pre>{{ selectedCars16 | json }}</pre>
+    
 </div>
 `,
     directives: [SELECT_DIRECTIVES]

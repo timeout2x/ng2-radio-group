@@ -1,8 +1,6 @@
 import {
     Component,
     Input,
-    forwardRef,
-    Provider,
     ViewEncapsulation,
     ChangeDetectorRef,
     AfterViewInit,
@@ -62,8 +60,8 @@ import {ItemTemplate, ItemTemplateTransclude} from "./ItemTemplate";
                         [value]="getItemValue(item)" 
                         [readonly]="readonly"
                         [disabled]="isItemDisabled(item)">
-                        <span [class.hidden]="!itemTemplates || !itemTemplates.length" [itemTemplateTransclude]="itemTemplates" [item]="item"></span>
-                        <span [class.hidden]="itemTemplates && itemTemplates.length" class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="(itemTemplates && itemTemplates.length) || last" class="separator"></span>
+                        <span [class.hidden]="!getItemTemplates() || !getItemTemplates().length" [itemTemplateTransclude]="getItemTemplates()" [item]="item"></span>
+                        <span [class.hidden]="getItemTemplates() && getItemTemplates().length" class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="(getItemTemplates() && getItemTemplates().length) || last" class="separator"></span>
                     </checkbox-item>
                     <span class="remove-button" 
                           [class.hidden]="!removeButton" (click)="removeItem(item)">×</span>
@@ -99,8 +97,8 @@ import {ItemTemplate, ItemTemplateTransclude} from "./ItemTemplate";
                         [value]="getItemValue(item)" 
                         [readonly]="readonly"
                         [disabled]="isItemDisabled(item)">
-                        <span [class.hidden]="!itemTemplates || !itemTemplates.length" [itemTemplateTransclude]="itemTemplates" [item]="item"></span>
-                        <span [class.hidden]="itemTemplates && itemTemplates.length"  class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="(itemTemplates && itemTemplates.length) || last" class="separator"></span>
+                        <span [class.hidden]="!getItemTemplates() || !getItemTemplates().length" [itemTemplateTransclude]="getItemTemplates()" [item]="item"></span>
+                        <span [class.hidden]="getItemTemplates() && getItemTemplates().length"  class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="(getItemTemplates() && getItemTemplates().length) || last" class="separator"></span>
                     </radio-item>
                     <span class="remove-button" [class.hidden]="!removeButton" (click)="removeItem(item)">×</span>
                 </div>
@@ -345,6 +343,9 @@ export class SelectItems implements AfterViewInit {
     @ContentChildren(ItemTemplate)
     itemTemplates: QueryList<ItemTemplate>;
 
+    @Input()
+    customItemTemplates: QueryList<ItemTemplate>;
+
     // -------------------------------------------------------------------------
     // Constructor
     // -------------------------------------------------------------------------
@@ -365,6 +366,13 @@ export class SelectItems implements AfterViewInit {
     // -------------------------------------------------------------------------
     // Public Methods
     // -------------------------------------------------------------------------
+    
+    getItemTemplates() {
+        if (this.customItemTemplates)
+            return this.customItemTemplates;
+        
+        return this.itemTemplates;
+    }
 
     changeModel(model: any) {
         this.valueAccessor.set(model);

@@ -1,5 +1,8 @@
 import "rxjs/Rx";
-import {Component, Input, Provider, ViewEncapsulation, OnInit, ViewChild, ElementRef} from "@angular/core";
+import {
+    Component, Input, Provider, ViewEncapsulation, OnInit, ViewChild, ElementRef,
+    ChangeDetectorRef, ContentChild, QueryList, ContentChildren, Directive
+} from "@angular/core";
 import {NG_VALIDATORS, NG_VALUE_ACCESSOR, AbstractControl} from "@angular/forms";
 import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES} from "ng2-dropdown";
@@ -8,6 +11,27 @@ import {WidthCalculator} from "./WidthCalculator";
 import {SelectValidator} from "./SelectValidator";
 import {SelectValueAccessor} from "./SelectValueAccessor";
 import {Utils} from "./Utils";
+import {ItemTemplate} from "./ItemTemplate";
+
+@Directive({
+    selector: "select-dropdown-template"
+})
+export class SelectDropdownTemplate {
+
+    @ContentChildren(ItemTemplate)
+    itemTemplates: QueryList<ItemTemplate>;
+
+}
+
+@Directive({
+    selector: "select-tags-template"
+})
+export class SelectTagsTemplate {
+
+    @ContentChildren(ItemTemplate)
+    itemTemplates: QueryList<ItemTemplate>;
+
+}
 
 @Component({
     selector: "select-tags",
@@ -32,7 +56,9 @@ import {Utils} from "./Utils";
                 (onSelect)="onTagSelect($event)"
                 [customToggleLogic]="selectItemsToggleLogic"
                 [labelBy]="valueBy ? listLabelBy : (listLabelBy || labelBy)"
-                [trackBy]="valueBy ? listTrackBy : (listTrackBy || trackBy)"></select-items>
+                [trackBy]="valueBy ? listTrackBy : (listTrackBy || trackBy)"
+                [customItemTemplates]="selectTagsTemplate?.itemTemplates">
+            </select-items>
             <input #selectTagsBoxInput 
                    class="select-tags-input"
                    [class.hidden]="items && valueAccessor.model && items.length === valueAccessor.model.length && !loader"
@@ -74,7 +100,8 @@ import {Utils} from "./Utils";
                 [orderBy]="orderBy"
                 [orderDirection]="orderDirection"
                 [selectAllLabel]="selectAllLabel"
-                [disableBy]="disableBy">
+                [disableBy]="disableBy"
+                [customItemTemplates]="selectDropdownTemplate?.itemTemplates">
             </select-items>
         </div>
     </div>
@@ -440,6 +467,12 @@ export class SelectTags implements OnInit {
     @ViewChild("selectTagsBox")
     selectTagsBox: ElementRef;
 
+    @ContentChild(SelectDropdownTemplate)
+    selectDropdownTemplate: SelectDropdownTemplate;
+
+    @ContentChild(SelectTagsTemplate)
+    selectTagsTemplate: SelectTagsTemplate;
+
     selectItemsToggleLogic = (options: { event: MouseEvent, valueAccessor: SelectValueAccessor, value: any }) => {
         if (options.event.metaKey || options.event.shiftKey || options.event.ctrlKey) {
             options.valueAccessor.addOrRemove(options.value);
@@ -714,6 +747,20 @@ export class SelectTags implements OnInit {
     onTagSelect(event: { event: MouseEvent }) {
         event.event.preventDefault();
         event.event.stopPropagation();
+    }
+
+    /**
+     * Exposes items in the dropdown, so they can be customized.
+     */
+    getDropdownItems() {
+        return this.items;
+    }
+
+    /**
+     * Exposes items in the tags box, so they can be customized.
+     */
+    getTagsItems() {
+        return this.valueAccessor.model;
     }
 
     // -------------------------------------------------------------------------
