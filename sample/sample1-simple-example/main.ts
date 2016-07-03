@@ -1,5 +1,6 @@
 import {bootstrap} from "@angular/platform-browser-dynamic";
 import {Component} from "@angular/core";
+import {disableDeprecatedForms, provideForms } from "@angular/forms";
 import {SELECT_DIRECTIVES} from "../../src/index";
 import {Car} from "./Car";
 
@@ -77,7 +78,7 @@ import {Car} from "./Car";
     <h4>Example with form:</h4>
 
     <form>
-        <radio-group ngControl="sortByControl" #sortByRadioGroup="ngForm" [(ngModel)]="sortBy" [required]="true">
+        <radio-group name="sortByControl" #sortByRadioGroup="ngModel" [(ngModel)]="sortBy" [required]="true">
             <input type="radio" value=""> Not selected<br/>
             <input type="radio" value="rating"> Rating<br/>
             <input type="radio" value="date"> Date<br/>
@@ -90,7 +91,7 @@ import {Car} from "./Car";
     
         <i>selected item:</i> <b>{{ sortBy }}</b><br/><br/>
         
-        <checkbox-group ngControl="orderByControl" #orderByCheckboxGroup="ngForm" [(ngModel)]="orderBy" [required]="true">
+        <checkbox-group name="orderByControl" #orderByCheckboxGroup="ngModel" [(ngModel)]="orderBy" [required]="true">
             <checkbox-item value="rating">Rating</checkbox-item>
             <checkbox-item value="date">Date</checkbox-item>
             <checkbox-item value="watches">Watch count</checkbox-item>
@@ -152,4 +153,7 @@ export class Sample1App {
 
 }
 
-bootstrap(Sample1App);
+bootstrap(Sample1App, [
+    disableDeprecatedForms(),
+    provideForms(),
+]);

@@ -1,11 +1,12 @@
 import "rxjs/Rx";
-import {Component, Input, forwardRef, Provider, ViewEncapsulation, OnInit} from "@angular/core";
-import {NG_VALIDATORS, NG_VALUE_ACCESSOR, Control} from "@angular/common";
+import {Component, Input, forwardRef, Provider, ViewEncapsulation, OnInit, ViewChild} from "@angular/core";
+import {NG_VALIDATORS, NG_VALUE_ACCESSOR, AbstractControl} from "@angular/forms";
 import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES} from "ng2-dropdown";
 import {Observable, Subscription} from "rxjs/Rx";
 import {SelectValueAccessor} from "./SelectValueAccessor";
 import {SelectValidator} from "./SelectValidator";
+import {Utils} from "./Utils";
 
 @Component({
     selector: "autocomplete",
@@ -18,7 +19,7 @@ import {SelectValidator} from "./SelectValidator";
                    [placeholder]="placeholder"
                    [disabled]="isDisabled()"
                    [(ngModel)]="term"
-                   [ngFormControl]="termControl"
+                   (ngModelChange)="onTermChange(term)"
                    (focus)="load()"
                    (click)="load()"
                    (keydown.enter)="addTerm()"/>
@@ -120,6 +121,7 @@ import {SelectValidator} from "./SelectValidator";
         DROPDOWN_DIRECTIVES
     ],
     providers: [
+        Utils,
         SelectValueAccessor,
         SelectValidator,
         new Provider(NG_VALUE_ACCESSOR, {
@@ -224,7 +226,6 @@ export class Autocomplete implements OnInit {
     // Public Properties
     // -------------------------------------------------------------------------
 
-    termControl = new Control();
     term: string;
     lastLoadTerm: string = "";
     items: any[] = [];
@@ -235,13 +236,15 @@ export class Autocomplete implements OnInit {
 
     private originalModel = false;
     private initialized: boolean = false;
+    private loadDenounce: Function;
 
     // -------------------------------------------------------------------------
     // Constructor
     // -------------------------------------------------------------------------
 
     constructor(public valueAccessor: SelectValueAccessor,
-                private validator: SelectValidator) {
+                private validator: SelectValidator,
+                private utils: Utils) {
         this.valueAccessor.modelWrites.subscribe((model: any) => {
             if (model)
                 this.originalModel = true;
@@ -258,37 +261,37 @@ export class Autocomplete implements OnInit {
         this.initialized = true;
         this.term = this.getItemLabel(this.valueAccessor.model);
 
-        // load options on term changes
-        this.termControl
-            .valueChanges
-            .debounceTime(this.debounceTime) // make a debounced request on term change
-            .filter(term => !this.originalModel && typeof term === "string" && term.trim().length >= this.minQueryLength)
-            .subscribe(term => this.load());
-
-        this.termControl
-            .valueChanges
-            .subscribe((term: string) => {
-                // if persist mode is set then create a new object
-                if (!this.isMultiple()) {
-                    if (this.persist && term && (!this.valueAccessor.model || this.getItemLabel(this.valueAccessor.model) !== term)) {
-                        const value = this.itemConstructor ? this.itemConstructor(term) : { [this.labelBy as string]: term };
-                        this.valueAccessor.set(value);
-                        this.originalModel = false;
-                    }
-
-                    // if term is empty then clean the model
-                    if (this.valueAccessor.model && term === "") {
-                        this.valueAccessor.set(undefined);
-                    }
-                } else {
-                    this.originalModel = false;
-                }
-            });
+        this.loadDenounce = this.utils.debounce(() => {
+            if (!this.originalModel && typeof this.term === "string" && this.term.trim().length >= this.minQueryLength) {
+                this.load();
+            }
+        }, this.debounceTime);
     }
 
     // -------------------------------------------------------------------------
     // Public Methods
     // -------------------------------------------------------------------------
+
+    onTermChange(term: string) {
+
+        // if persist mode is set then create a new object
+        if (!this.isMultiple()) {
+            if (this.persist && term && (!this.valueAccessor.model || this.getItemLabel(this.valueAccessor.model) !== term)) {
+                const value = this.itemConstructor ? this.itemConstructor(term) : { [this.labelBy as string]: term };
+                this.valueAccessor.set(value);
+                this.originalModel = false;
+            }
+
+            // if term is empty then clean the model
+            if (this.valueAccessor.model && term === "") {
+                this.valueAccessor.set(undefined);
+            }
+        } else {
+            this.originalModel = false;
+        }
+
+        this.loadDenounce();
+    }
 
     load(): Subscription {
         if (!this.loader || this.originalModel || !this.term || this.term.length < this.minQueryLength || this.term === this.lastLoadTerm)

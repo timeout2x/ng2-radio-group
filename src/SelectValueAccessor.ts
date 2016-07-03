@@ -1,5 +1,5 @@
 import {Injectable, EventEmitter} from "@angular/core";
-import {ControlValueAccessor} from "@angular/common";
+import {ControlValueAccessor} from "@angular/forms";
 
 @Injectable()
 export class SelectValueAccessor implements ControlValueAccessor {

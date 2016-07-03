@@ -13,7 +13,7 @@ import {
     EventEmitter,
     ContentChildren
 } from "@angular/core";
-import {NG_VALIDATORS, NG_VALUE_ACCESSOR} from "@angular/common";
+import {NG_VALIDATORS, NG_VALUE_ACCESSOR} from "@angular/forms";
 import {CheckboxGroup} from "./CheckboxGroup";
 import {RadioGroup} from "./RadioGroup";
 import {RadioItem} from "./RadioItem";
@@ -205,11 +205,11 @@ import {ItemTemplate, ItemTemplateTransclude} from "./ItemTemplate";
         SelectValueAccessor,
         SelectValidator,
         new Provider(NG_VALUE_ACCESSOR, {
-            useExisting: forwardRef(() => SelectValueAccessor),
+            useExisting: SelectValueAccessor,
             multi: true
         }),
         new Provider(NG_VALIDATORS, {
-            useExisting: forwardRef(() => SelectValidator),
+            useExisting: SelectValidator,
             multi: true
         })
     ]

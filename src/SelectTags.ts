@@ -1,12 +1,13 @@
 import "rxjs/Rx";
 import {Component, Input, Provider, ViewEncapsulation, OnInit, ViewChild, ElementRef} from "@angular/core";
-import {NG_VALIDATORS, NG_VALUE_ACCESSOR, Control} from "@angular/common";
+import {NG_VALIDATORS, NG_VALUE_ACCESSOR, AbstractControl} from "@angular/forms";
 import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES} from "ng2-dropdown";
 import {Observable, Subscription} from "rxjs/Rx";
 import {WidthCalculator} from "./WidthCalculator";
 import {SelectValidator} from "./SelectValidator";
 import {SelectValueAccessor} from "./SelectValueAccessor";
+import {Utils} from "./Utils";
 
 @Component({
     selector: "select-tags",
@@ -39,7 +40,7 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
                    [placeholder]="placeholder"
                    [disabled]="isDisabled()"
                    [(ngModel)]="term"
-                   [ngFormControl]="termControl"
+                   (ngModelChange)="onTermChange(term)"
                    (focus)="load()"
                    (click)="load()"
                    (keydown)="onInputKeydown($event)"
@@ -266,6 +267,7 @@ import {SelectValueAccessor} from "./SelectValueAccessor";
         DROPDOWN_DIRECTIVES
     ],
     providers: [
+        Utils,
         SelectValueAccessor,
         SelectValidator,
         WidthCalculator,
@@ -284,6 +286,9 @@ export class SelectTags implements OnInit {
     // -------------------------------------------------------------------------
     // Inputs
     // -------------------------------------------------------------------------
+
+    @Input()
+    name: string;
 
     @Input()
     debounceTime = 500;
@@ -415,8 +420,10 @@ export class SelectTags implements OnInit {
     // Public Properties
     // -------------------------------------------------------------------------
 
-    termControl = new Control();
-    term: string;
+    @ViewChild("termControl")
+    termControl: AbstractControl;
+    
+    term: string = "";
     lastLoadTerm: string = "";
     selectedItems: any[] = [];
 
@@ -450,6 +457,7 @@ export class SelectTags implements OnInit {
     private originalModel = false;
     private initialized: boolean = false;
     private itemsAreLoaded: boolean = false;
+    private loadDenounce: Function;
 
     // -------------------------------------------------------------------------
     // Constructor
@@ -457,13 +465,13 @@ export class SelectTags implements OnInit {
 
     constructor(private widthCalculator: WidthCalculator,
                 public valueAccessor: SelectValueAccessor,
-                private validator: SelectValidator) {
+                private validator: SelectValidator,
+                private utils: Utils) {
         this.valueAccessor.modelWrites.subscribe((model: any) => {
             if (model)
                 this.originalModel = true;
             if (this.initialized) {
                 this.cursorPosition = model.length;
-                this.term = this.getItemLabel(model);
                 this.recalculateInputWidth(undefined, this.term);
             }
         });
@@ -478,27 +486,24 @@ export class SelectTags implements OnInit {
 
         if (this.valueAccessor.model) {
             this.cursorPosition = this.valueAccessor.model.length;
-            this.term = this.getItemLabel(this.valueAccessor.model);
         }
 
-        // load options on term changes
-        this.termControl
-            .valueChanges
-            .debounceTime(this.debounceTime) // make a debounced request on term change
-            .filter(term => !this.originalModel && typeof term === "string" && term.trim().length >= this.minQueryLength)
-            .subscribe(term => this.load());
-
-        this.termControl
-            .valueChanges
-            .subscribe((term: string) => {
-                this.originalModel = false;
-                this.dropdownSelectItems.resetActive();
-            });
+        this.loadDenounce = this.utils.debounce(() => {
+            if (!this.originalModel && typeof this.term === "string" && this.term.trim().length >= this.minQueryLength) {
+                this.load();
+            }
+        }, this.debounceTime);
     }
 
     // -------------------------------------------------------------------------
     // Public Methods
     // -------------------------------------------------------------------------
+
+    onTermChange(term: string) {
+        this.originalModel = false;
+        this.dropdownSelectItems.resetActive();
+        this.loadDenounce();
+    }
 
     /**
      * Load items using loader.
@@ -566,7 +571,8 @@ export class SelectTags implements OnInit {
      * Checks if this component is disabled.
      */
     isDisabled() {
-        if (this.maxModelSize > 0 &&
+        if (this.valueAccessor.model &&
+            this.maxModelSize > 0 &&
             this.valueAccessor.model.length >= this.maxModelSize)
             return true;
         if (this.readonly)
@@ -614,9 +620,11 @@ export class SelectTags implements OnInit {
         if (!this.term) {
             if (event.keyCode === 37) { // left
                 this.moveLeft();
+                event.preventDefault();
 
             } else if (event.keyCode === 39) { // right
                 this.moveRight();
+                event.preventDefault();
 
             } else if (event.keyCode === 8 && this.removeByKey) { // backspace
                 this.valueAccessor.removeAt(this.cursorPosition - 1);

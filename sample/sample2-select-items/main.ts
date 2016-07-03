@@ -3,6 +3,7 @@ import {Component} from "@angular/core";
 import {SELECT_DIRECTIVES} from "../../src/index";
 import {Car} from "./Car";
 import {ItemTemplate} from "../../src/ItemTemplate";
+import {provideForms, disableDeprecatedForms} from "@angular/forms";
 
 @Component({
     selector: "app",
@@ -470,4 +471,7 @@ export class Sample1App {
 
 }
 
-bootstrap(Sample1App);
+bootstrap(Sample1App, [
+    disableDeprecatedForms(),
+    provideForms(),
+]);

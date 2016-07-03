@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {Control, Validator} from "@angular/common";
+import {Validator, AbstractControl} from "@angular/forms";
 
 @Injectable()
 export class SelectValidator implements Validator {
@@ -17,7 +17,7 @@ export class SelectValidator implements Validator {
     // Implemented from Validator
     // -------------------------------------------------------------------------
 
-    validate(c: Control) {
+    validate(c: AbstractControl) {
         if (!this.options) return null;
         
         const errors: any = {};

@@ -4,6 +4,7 @@ import {SELECT_DIRECTIVES} from "../../src/index";
 import {Car} from "./Car";
 import {HTTP_PROVIDERS, Http} from "@angular/http";
 import {Observable} from "rxjs/Rx";
+import {disableDeprecatedForms, provideForms} from "@angular/forms";
 
 @Component({
     selector: "app",
@@ -192,8 +193,8 @@ export class Sample1App {
     
     loader = (term: string) => {
         return this.http
-            .get("http://localhost:4000/tags/search?query=" + term)
-            .map(res => res.json()) as Observable<any>;
+            .get("https://api.github.com/search/repositories?q=" + term)
+            .map(res => res.json().items) as Observable<any>;
     };
 
     itemConstructor = (term: string) => {
@@ -210,5 +211,7 @@ export class Sample1App {
 }
 
 bootstrap(Sample1App, [
-    HTTP_PROVIDERS
+    HTTP_PROVIDERS,
+    disableDeprecatedForms(),
+    provideForms(),
 ]);

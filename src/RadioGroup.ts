@@ -1,5 +1,5 @@
 import {Component, Input, Provider, ViewEncapsulation} from "@angular/core";
-import {NG_VALUE_ACCESSOR, NG_VALIDATORS} from "@angular/common";
+import {NG_VALUE_ACCESSOR, NG_VALIDATORS} from "@angular/forms";
 import {SelectValueAccessor} from "./SelectValueAccessor";
 import {SelectValidator} from "./SelectValidator";
 
@@ -10,6 +10,8 @@ import {SelectValidator} from "./SelectValidator";
     providers: [
         SelectValueAccessor,
         SelectValidator,
+        // { provide: NG_VALUE_ACCESSOR, useExisting: SelectValueAccessor, multi: true },
+        // { provide: NG_VALIDATORS, useExisting: SelectValidator, multi: true }
         new Provider(NG_VALUE_ACCESSOR, {
             useExisting: SelectValueAccessor,
             multi: true
@@ -44,7 +46,7 @@ export class RadioGroup {
     get trackBy() {
         return this.valueAccessor.trackBy;
     }
-    
+
     @Input()
     set required(required: boolean) {
         this.validator.options.required = required;

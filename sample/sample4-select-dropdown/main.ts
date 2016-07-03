@@ -3,6 +3,7 @@ import {Component} from "@angular/core";
 import {SELECT_DIRECTIVES} from "../../src/index";
 import {Car} from "./Car";
 import {HTTP_PROVIDERS, Http} from "@angular/http";
+import {disableDeprecatedForms, provideForms} from "@angular/forms";
 
 @Component({
     selector: "app",
@@ -224,5 +225,7 @@ export class Sample1App {
 }
 
 bootstrap(Sample1App, [
-    HTTP_PROVIDERS
+    HTTP_PROVIDERS,
+    disableDeprecatedForms(),
+    provideForms(),
 ]);

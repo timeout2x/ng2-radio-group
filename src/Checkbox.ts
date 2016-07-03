@@ -1,5 +1,5 @@
 import {Input, Host, Directive, HostBinding, Optional, HostListener, Provider, forwardRef, Inject} from "@angular/core";
-import {NG_VALUE_ACCESSOR, NG_VALIDATORS} from "@angular/common";
+import {NG_VALUE_ACCESSOR, NG_VALIDATORS} from "@angular/forms";
 import {SelectValueAccessor} from "./SelectValueAccessor";
 import {SelectValidator} from "./SelectValidator";
 import {CheckboxGroup} from "./CheckboxGroup";
