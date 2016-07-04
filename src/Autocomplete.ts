@@ -1,4 +1,3 @@
-import "rxjs/Rx";
 import {
     Component,
     Input,
@@ -7,16 +6,18 @@ import {
     Directive,
     ContentChildren,
     QueryList,
-    ContentChild
+    ContentChild,
+    Optional
 } from "@angular/core";
 import {NG_VALIDATORS, NG_VALUE_ACCESSOR} from "@angular/forms";
 import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES} from "ng2-dropdown";
-import {Observable, Subscription} from "rxjs/Rx";
+import {Observable} from "rxjs/Observable";
 import {SelectValueAccessor} from "./SelectValueAccessor";
 import {SelectValidator} from "./SelectValidator";
 import {Utils} from "./Utils";
 import {ItemTemplate} from "./ItemTemplate";
+import {SelectControlsOptions} from "./SelectControlsOptions";
 
 @Directive({
     selector: "autocomplete-dropdown-template"
@@ -75,12 +76,28 @@ export class AutocompleteDropdownTemplate {
 .autocomplete .autocomplete-dropdown {
     position: relative;
 }
+.autocomplete .autocomplete-input input[disabled] {
+    color: #CCC;
+    background: #EEE;
+    cursor: not-allowed;
+}
 .autocomplete .autocomplete-input input {
+    display: block;
     width: 100%;
+    padding: 6px 10px;
+    font-size: 13px;
+    line-height: 1.42857143;
+    border: 1px solid #ccc;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
 }
 .autocomplete .autocomplete-dropdown-menu {
     position: absolute;
     top: 100%;
+    width: 100%;
     left: 0;
     z-index: 1000;
     display: none;
@@ -155,95 +172,185 @@ export class Autocomplete implements OnInit {
     // Inputs
     // -------------------------------------------------------------------------
 
+    /**
+     * Items to be shown in the autocomplete. If there are no static list of items, and items are being loaded instead,
+     * then [loader] should be used.
+     */
     @Input()
-    placeholder: string = "";
+    items: any[] = [];
 
+    /**
+     * Used to load items into autocomplete. If items are statically defined, then [items] must be used instead.
+     */
+    @Input()
+    loader: (term: string) => Observable<any>|Promise<any>;
+
+    /**
+     * Autocomplete can work with both multiple and single-value ngModel.
+     * Autocomplete automatically determine if your component should be multiple or not based on your ngModel -
+     * in the case if ngModel is an array then multiple mode is set to true, otherwise it set to false.
+     * This option explicitly set multiple mode, so its ignore whenever your ngModel is an array or not.
+     */
     @Input()
     multiple: boolean;
 
-    @Input()
-    debounceTime = 500;
-
-    @Input()
-    minQueryLength = 2;
-
+    /**
+     * By default autocomplete can't create a new items into your model. It can only select exist items from the
+     * given items, or from the items from the loader. But if this option is set to true, then autocomplete will
+     * be able to create a new instances of the object with the label given in the input, and set this value to the
+     * ngModel.
+     */
     @Input()
     persist: boolean = false;
 
-    @Input()
-    itemLabelBy: string|((item: any) => string);
-
-    @Input()
-    labelBy: string|((item: any) => string);
-
-    @Input()
-    disableBy: string|((item: any) => string);
-
-    @Input()
-    orderBy: string|((item1: any, item2: any) => number);
-
-    @Input()
-    orderDirection: "asc"|"desc";
-
-    @Input()
-    disabled: boolean = false;
-
-    @Input()
-    limit: number;
-
-    @Input()
-    maxModelSize: number;
-
-    @Input()
-    loader: (term: string) => Observable<any>;
-
-    @Input()
-    itemConstructor: ((term: string) => any);
-
-    @Input()
-    addButtonLabel: string = "add";
-
-    @Input()
-    addButtonSecondaryLabel: string = "(or press enter)";
-
-    // -------------------------------------------------------------------------
-    // Input accessors
-    // -------------------------------------------------------------------------
-
-    @Input()
-    set valueBy(valueBy: string|((item: any) => string)) {
-        this.valueAccessor.valueBy = valueBy;
-    }
-
-    get valueBy() {
-        return this.valueAccessor.valueBy;
-    }
-
-    @Input()
-    set trackBy(trackBy: string|((item: any) => string)) {
-        this.valueAccessor.trackBy = trackBy;
-    }
-
-    get trackBy() {
-        return this.valueAccessor.trackBy;
-    }
-
+    /**
+     * Sets this ngModel to be filled as required option.
+     */
     @Input()
     set required(required: boolean) {
         this.validator.options.required = required;
     }
 
+    /**
+     * Determines if ngModel of this component is required or not.
+     */
     get required() {
         return this.validator.options.required;
     }
+
+    /**
+     * Disables this component, so user can't select items in the autocomplete anymore.
+     */
+    @Input()
+    disabled: boolean = false;
+
+    /**
+     * Specifies a property name which will be used to determine object's label in the input.
+     * For example if your item is an object and you would like to show its name in the autocomplete input you must
+     * provide a property of that object which serves as this object's name.
+     * Alternatively, you can specify a function that will accepts that object and return a name of it.
+     */
+    @Input()
+    itemLabelBy: string|((item: any) => string);
+
+    /**
+     * Specifies a property name which will be used to determine object's label in the dropdown.
+     * For example if your item is an object and you would like to show its name in the dropdown you must
+     * provide a property of that object which serves as this object's name.
+     * Alternatively, you can specify a function that will accepts that object and return a name of it.
+     */
+    @Input()
+    labelBy: string|((item: any) => string);
+
+    /**
+     * Specifies a property name which will be used to take a specific values of the selected objects.
+     * Alternatively, you can specify a function that will accepts that object and return a value of it that you wish
+     * to put into ngModel.
+     */
+    @Input()
+    set valueBy(valueBy: string|((item: any) => string)) {
+        this.valueAccessor.valueBy = valueBy;
+    }
+
+    /**
+     * Gets property name (or function that returns it) which will be used to take a specific values of the selected objects.
+     */
+    get valueBy() {
+        return this.valueAccessor.valueBy;
+    }
+
+    /**
+     * Specifies a property name which will be used to track selection of the different objects.
+     * Alternatively, you can specify a function that will accepts that object and return a tracking value.
+     */
+    @Input()
+    set trackBy(trackBy: string|((item: any) => string)) {
+        this.valueAccessor.trackBy = trackBy;
+    }
+
+    /**
+     * Gets property name (or function that returns it) which will be used to take a tracking value.
+     */
+    get trackBy() {
+        return this.valueAccessor.trackBy;
+    }
+
+    /**
+     * Specifies a property name which will be used to order objects in the dropdown.
+     * Alternatively, you can specify a function that will perform sorting comparision.
+     */
+    @Input()
+    orderBy: string|((item1: any, item2: any) => number);
+
+    /**
+     * Specifies a property name which will be used to disable specific objects in the dropdown.
+     * Alternatively, you can specify a function that accepts object and returns its disabled property.
+     */
+    @Input()
+    disableBy: string|((item: any) => string);
+
+    /**
+     * A hinting string to be shown in the input when there is no value.
+     */
+    @Input()
+    placeholder: string = "";
+
+    /**
+     * Defines order direction. "desc" value is used to perform descending ordering, and asc for ascending ordering.
+     */
+    @Input()
+    orderDirection: "asc"|"desc";
+
+    /**
+     * Label to be shown in the "add button" area.
+     */
+    @Input()
+    addButtonLabel: string;
+
+    /**
+     * Secondary label to be shown in the "add button" area.
+     */
+    @Input()
+    addButtonSecondaryLabel: string;
+
+    /**
+     * Maximal number of items that are allowed to be shown in the dropdown.
+     */
+    @Input()
+    limit: number;
+
+    /**
+     * Debounce time between user typings and requests to load items.
+     */
+    @Input()
+    debounceTime: number;
+
+    /**
+     * Minimal number of characters before which component performs a request to load items.
+     */
+    @Input()
+    minQueryLength: number;
+
+    /**
+     * Maximal allowed items to be selected in the model. Used for multiple autocomplete.
+     */
+    @Input()
+    maxModelSize: number;
+
+    /**
+     * If you want to create new items your way (lets say you want to initialize a class X), you can use this item
+     * constructor function.
+     */
+    @Input()
+    itemConstructor: ((term: string) => any);
 
     // -------------------------------------------------------------------------
     // Public Properties
     // -------------------------------------------------------------------------
 
     term: string;
+
     lastLoadTerm: string = "";
-    items: any[] = [];
 
     @ContentChild(AutocompleteDropdownTemplate)
     dropdownTemplate: AutocompleteDropdownTemplate;
@@ -254,7 +361,7 @@ export class Autocomplete implements OnInit {
 
     private originalModel = false;
     private initialized: boolean = false;
-    private loadDenounce: Function;
+    private loadDebounce: Function;
 
     // -------------------------------------------------------------------------
     // Constructor
@@ -262,7 +369,8 @@ export class Autocomplete implements OnInit {
 
     constructor(public valueAccessor: SelectValueAccessor,
                 private validator: SelectValidator,
-                private utils: Utils) {
+                private utils: Utils,
+                @Optional() private defaultOptions: SelectControlsOptions) {
         this.valueAccessor.modelWrites.subscribe((model: any) => {
             if (model)
                 this.originalModel = true;
@@ -276,24 +384,32 @@ export class Autocomplete implements OnInit {
     // -------------------------------------------------------------------------
 
     ngOnInit() {
+        // apply default options
+        this.applyOptions();
+
         this.initialized = true;
         this.term = this.getItemLabel(this.valueAccessor.model);
+        this.loadDebounce = this.utils.debounce(() => this.load(), this.debounceTime);
+    }
 
-        this.loadDenounce = this.utils.debounce(() => {
-            if (!this.originalModel && typeof this.term === "string" && this.term.trim().length >= this.minQueryLength) {
-                this.load();
-            }
-        }, this.debounceTime);
+    // -------------------------------------------------------------------------
+    // Accessors
+    // -------------------------------------------------------------------------
+
+    /**
+     * Gets items in the dropdown. Shortcut method to be used in a custom templates.
+     */
+    get dropdownItems() {
+        return this.items;
     }
 
     // -------------------------------------------------------------------------
     // Public Methods
     // -------------------------------------------------------------------------
 
-    get dropdownItems() {
-        return this.items;
-    }
-    
+    /**
+     * Tweaks on term change.
+     */
     onTermChange(term: string) {
 
         // if persist mode is set then create a new object
@@ -312,21 +428,37 @@ export class Autocomplete implements OnInit {
             this.originalModel = false;
         }
 
-        this.loadDenounce();
+        if (!this.originalModel && typeof this.term === "string" && this.term.trim().length >= this.minQueryLength) {
+            this.loadDebounce();
+        }
     }
 
-    load(): Subscription {
+    /**
+     * Loads items using loader.
+     */
+    load(): void {
         if (!this.loader || this.originalModel || !this.term || this.term.length < this.minQueryLength || this.term === this.lastLoadTerm)
             return;
 
-        return this
-            .loader(this.term)
-            .subscribe(items => {
+        const loaderResult = this.loader(this.term);
+
+        if (loaderResult instanceof Promise) {
+            loaderResult.then(items => {
                 this.lastLoadTerm = this.term;
                 this.items = items;
             });
+
+        } else if (loaderResult instanceof Observable) {
+            loaderResult.subscribe(items => {
+                this.lastLoadTerm = this.term;
+                this.items = items;
+            });
+        }
     }
 
+    /**
+     * Tweaks on ngModel change.
+     */
     onModelChange(model: any) {
         this.valueAccessor.set(model);
         if (!this.isMultiple() && model) {
@@ -340,11 +472,11 @@ export class Autocomplete implements OnInit {
         }
     }
 
+    /**
+     * Adds a new item based on the inputted term.
+     */
     addTerm() {
         if (!this.term || !this.persist || !this.isMultiple()) return;
-
-        // if (!this.valueAccessor.model)
-        //     this.valueAccessor.set([]);
 
         const newModel = this.itemConstructor ? this.itemConstructor(this.term) : { [this.labelBy as string]: this.term };
         this.valueAccessor.add(newModel);
@@ -353,6 +485,9 @@ export class Autocomplete implements OnInit {
         this.items = [];
     }
 
+    /**
+     * Checks if component is in multiple mode.
+     */
     isMultiple() {
         if (this.multiple !== undefined)
             return this.multiple;
@@ -360,6 +495,9 @@ export class Autocomplete implements OnInit {
         return this.valueAccessor.model instanceof Array;
     }
 
+    /**
+     * Checks if component should be disabled or not.
+     */
     isDisabled() {
         if (this.maxModelSize > 0 &&
             this.isMultiple() &&
@@ -369,6 +507,9 @@ export class Autocomplete implements OnInit {
         return this.disabled;
     }
 
+    /**
+     * Gets label for the item in the input box.
+     */
     getItemLabel(item: any) {
         if (!item) return "";
         const labelBy = this.valueBy ? this.itemLabelBy : (this.itemLabelBy || this.labelBy);
@@ -385,5 +526,43 @@ export class Autocomplete implements OnInit {
         return item;
     }
 
+    // -------------------------------------------------------------------------
+    // Private Methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Applies default options.
+     */
+    private applyOptions() {
+        const options = this.defaultOptions && this.defaultOptions.autocomplete ? this.defaultOptions.autocomplete : undefined;
+        if (!this.debounceTime) {
+            if (options && options.debounceTime !== undefined) {
+                this.debounceTime = options.debounceTime;
+            } else {
+                this.debounceTime = 500;
+            }
+        }
+        if (!this.minQueryLength) {
+            if (options && options.minQueryLength !== undefined) {
+                this.minQueryLength = options.minQueryLength;
+            } else {
+                this.minQueryLength = 2;
+            }
+        }
+        if (!this.addButtonLabel) {
+            if (options && options.addButtonLabel !== undefined) {
+                this.addButtonLabel = options.addButtonLabel;
+            } else {
+                this.addButtonLabel = "add";
+            }
+        }
+        if (!this.addButtonSecondaryLabel) {
+            if (options && options.addButtonSecondaryLabel !== undefined) {
+                this.addButtonSecondaryLabel = options.addButtonSecondaryLabel;
+            } else {
+                this.addButtonSecondaryLabel = "(or press enter)";
+            }
+        }
+    }
 
 }

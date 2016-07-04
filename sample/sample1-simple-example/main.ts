@@ -1,3 +1,4 @@
+import "rxjs/Rx";
 import {bootstrap} from "@angular/platform-browser-dynamic";
 import {Component} from "@angular/core";
 import {disableDeprecatedForms, provideForms } from "@angular/forms";

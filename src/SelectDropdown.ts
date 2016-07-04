@@ -1,4 +1,3 @@
-import "rxjs/Rx";
 import {Component, Input, Provider, ViewEncapsulation, ViewChild} from "@angular/core";
 import {NG_VALIDATORS, NG_VALUE_ACCESSOR} from "@angular/forms";
 import {SelectItems} from "./SelectItems";

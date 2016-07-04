@@ -110,7 +110,33 @@ tbd
 
 ## Autocomplete component
 
-tbd
+```html
+<autocomplete
+    [(ngModel)]="any"
+    [loader]="loader"
+    [multiple]="boolean"
+    [persist]="boolean"
+    [required]="boolean"
+    [disabled]="boolean"
+    [itemLabelBy]="string|((item: any) => string)"
+    [labelBy]="string|((item: any) => string)"
+    [valueBy]="string|((item: any) => string)"
+    [trackBy]="string|((item: any) => string)"
+    [orderBy]="string|((item: any) => string)"
+    [disableBy]="string|((item: any) => string)"
+    placeholder="string"
+    orderDirection="asc|desc"
+    addButtonLabel="string"
+    addButtonSecondaryLabel="string"
+    [limit]="number"
+    [debounceTime]="number"
+    [minQueryLength]="number"
+    [maxModelSize]="number"
+    [itemConstructor]="(term: string) => any">
+</autocomplete>
+```
+
+*
 
 ## Select tags component
 

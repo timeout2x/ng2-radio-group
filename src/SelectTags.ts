@@ -1,12 +1,19 @@
-import "rxjs/Rx";
 import {
-    Component, Input, Provider, ViewEncapsulation, OnInit, ViewChild, ElementRef,
-    ChangeDetectorRef, ContentChild, QueryList, ContentChildren, Directive
+    Component,
+    Input,
+    ViewEncapsulation,
+    OnInit,
+    ViewChild,
+    ElementRef,
+    ContentChild,
+    QueryList,
+    ContentChildren,
+    Directive
 } from "@angular/core";
 import {NG_VALIDATORS, NG_VALUE_ACCESSOR, AbstractControl} from "@angular/forms";
 import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES} from "ng2-dropdown";
-import {Observable, Subscription} from "rxjs/Rx";
+import {Observable} from "rxjs/Observable";
 import {WidthCalculator} from "./WidthCalculator";
 import {SelectValidator} from "./SelectValidator";
 import {SelectValueAccessor} from "./SelectValueAccessor";
@@ -92,7 +99,7 @@ export class SelectTagsBoxTemplate {
                 [hideControls]="true"
                 [multiple]="true"
                 [labelBy]="labelBy"
-                [searchBy]="labelBy"
+                [searchBy]="searchBy"
                 [trackBy]="trackBy"
                 [valueBy]="valueBy"
                 [limit]="limit"
@@ -358,7 +365,7 @@ export class SelectTags implements OnInit {
     maxModelSize: number;
 
     @Input()
-    loader: (term: string) => Observable<any>;
+    loader: (term: string) => Observable<any>|Promise<any>;
 
     @Input()
     items: any[] = [];
@@ -447,9 +454,6 @@ export class SelectTags implements OnInit {
     // -------------------------------------------------------------------------
     // Public Properties
     // -------------------------------------------------------------------------
-
-    @ViewChild("termControl")
-    termControl: AbstractControl;
     
     term: string = "";
     lastLoadTerm: string = "";
@@ -522,11 +526,7 @@ export class SelectTags implements OnInit {
             this.cursorPosition = this.valueAccessor.model.length;
         }
 
-        this.loadDenounce = this.utils.debounce(() => {
-            if (!this.originalModel && typeof this.term === "string" && this.term.trim().length >= this.minQueryLength) {
-                this.load();
-            }
-        }, this.debounceTime);
+        this.loadDenounce = this.utils.debounce(() => this.load(), this.debounceTime);
     }
 
     // -------------------------------------------------------------------------
@@ -536,23 +536,35 @@ export class SelectTags implements OnInit {
     onTermChange(term: string) {
         this.originalModel = false;
         this.dropdownSelectItems.resetActive();
-        this.loadDenounce();
+
+        if (!this.originalModel && typeof this.term === "string" && this.term.trim().length >= this.minQueryLength) {
+            this.loadDenounce();
+        }
     }
 
     /**
      * Load items using loader.
      */
-    load(): Subscription {
+    load(): void {
         if (this.readonly || !this.loader || this.originalModel || !this.term || this.term.length < this.minQueryLength || this.term === this.lastLoadTerm)
             return;
 
-        return this
-            .loader(this.term)
-            .subscribe(items => {
+        const loaderResult = this.loader(this.term);
+
+        if (loaderResult instanceof Promise) {
+            loaderResult.then(items => {
                 this.lastLoadTerm = this.term;
                 this.items = items;
                 this.itemsAreLoaded = true;
             });
+
+        } else if (loaderResult instanceof Observable) {
+            loaderResult.subscribe(items => {
+                this.lastLoadTerm = this.term;
+                this.items = items;
+                this.itemsAreLoaded = true;
+            });
+        }
     }
 
     /**

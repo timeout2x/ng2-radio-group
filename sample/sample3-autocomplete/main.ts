@@ -1,7 +1,8 @@
+import "rxjs/Rx";
 import {bootstrap} from "@angular/platform-browser-dynamic";
 import {Component} from "@angular/core";
 import {SELECT_DIRECTIVES} from "../../src/index";
-import {Car} from "./Car";
+import {Repository} from "./Repository";
 import {HTTP_PROVIDERS, Http} from "@angular/http";
 import {Observable} from "rxjs/Rx";
 import {disableDeprecatedForms, provideForms} from "@angular/forms";
@@ -11,119 +12,78 @@ import {disableDeprecatedForms, provideForms} from "@angular/forms";
     template: `
 <div class="container">
     
-        <h4>Autocomplete multiple:</h4>
-        <autocomplete [(ngModel)]="selectedCars1" 
-                    [loader]="loader"
-                    labelBy="name"
-                    trackBy="name"></autocomplete>
-
-        <h4>Selected items:</h4>
-        <select-items
-                  [hideControls]="true"
-                  [removeButton]="true"
-                  [items]="selectedCars1"
-                  labelBy="name"
-                  trackBy="name"
-                  [readonly]="true"></select-items>
-                    
-        <br/><b>model: </b>
-        <pre>{{ selectedCars1 | json }}</pre>
-    
-        <h4>Autocomplete multiple with persist and custom button label</h4>
-        <autocomplete [(ngModel)]="selectedCars2" 
-                    [loader]="loader"
-                    [persist]="true"
-                    addButtonLabel="add"
-                    labelBy="name"
-                    trackBy="name"></autocomplete>
-                    
-        <b>model: </b>
-        <pre>{{ selectedCars2 | json }}</pre>
-    
         <h4>Autocomplete single:</h4>
-        <autocomplete [(ngModel)]="selectedCar1" 
-                    [loader]="loader"
-                    labelBy="name"
-                    trackBy="name"></autocomplete>
+        <autocomplete 
+            [(ngModel)]="selectedRepository1" 
+            [loader]="loader"
+            labelBy="name"
+            trackBy="name"></autocomplete>
                     
         <b>model: </b>
-        <pre>{{ selectedCar1 | json }}</pre>
+        <pre>{{ selectedRepository1 | json }}</pre>
     
         <h4>Autocomplete single with persist:</h4>
-        <autocomplete [(ngModel)]="selectedCar2" 
+        <autocomplete [(ngModel)]="selectedRepository2" 
                       [loader]="loader"
                       [persist]="true"
                       labelBy="name"
                       trackBy="name"></autocomplete>
                     
         <b>model: </b>
-        <pre>{{ selectedCar2 | json }}</pre>
+        <pre>{{ selectedRepository2 | json }}</pre>
     
-        <h4>Autocomplete with predefined model:</h4>
-        <autocomplete [(ngModel)]="newSelectedCar" 
+        <h4>Autocomplete single with predefined model:</h4>
+        <autocomplete [(ngModel)]="newSelectedRepository" 
                     [loader]="loader"
                     [persist]="true"
                     labelBy="name"
                     trackBy="name"></autocomplete>
                     
         <b>model: </b>
-        <pre>{{ newSelectedCar | json }}</pre>
+        <pre>{{ newSelectedRepository | json }}</pre>
         <button (click)="resetModel()">reset model</button>
-    
-        <h4>Autocomplete multiple disabled:</h4>
-        <autocomplete [(ngModel)]="selectedCars3" 
+        
+        <h4>Autocomplete single disabled:</h4>
+        <autocomplete [(ngModel)]="selectedRepository3" 
                     [loader]="loader"
-                    [persist]="true"
                     [disabled]="true"
                     labelBy="name"
                     trackBy="name"></autocomplete>
                     
         <b>model: </b>
-        <pre>{{ selectedCars3 | json }}</pre>
+        <pre>{{ selectedRepository3 | json }}</pre>
     
-        <h4>Autocomplete explicit multiple:</h4>
-        <autocomplete [(ngModel)]="allSelectedCars" 
-                    [loader]="loader"
-                    [persist]="true"
-                    [multiple]="true"
-                    labelBy="name"
-                    trackBy="name"></autocomplete>
-                    
-        <b>model: </b>
-        <pre>{{ allSelectedCars | json }}</pre>
-    
-        <h4>Autocomplete with minimal number of characters to send a request:</h4>
-        <autocomplete [(ngModel)]="selectedCars4" 
+        <h4>Autocomplete single with minimal number of characters to send a request:</h4>
+        <autocomplete [(ngModel)]="selectedRepository4" 
                     [loader]="loader"
                     [minQueryLength]="1"
                     labelBy="name"
                     trackBy="name"></autocomplete>
                     
         <b>model: </b>
-        <pre>{{ selectedCars4 | json }}</pre>
+        <pre>{{ selectedRepository4 | json }}</pre>
     
-        <h4>Autocomplete with specific values selected:</h4>
-        <autocomplete [(ngModel)]="selectedCars5" 
+        <h4>Autocomplete single with specific values selected:</h4>
+        <autocomplete [(ngModel)]="selectedRepository5" 
                     [loader]="loader"
                     labelBy="name"
-                    trackBy="name"
                     valueBy="name"></autocomplete>
                     
         <b>model: </b>
-        <pre>{{ selectedCars5 | json }}</pre>
+        <pre>{{ selectedRepository5 | json }}</pre>
     
-        <h4>Autocomplete with ordering enabled:</h4>
-        <autocomplete [(ngModel)]="selectedCars6" 
+        <h4>Autocomplete single with ordering enabled:</h4>
+        <autocomplete [(ngModel)]="selectedRepository6" 
                     [loader]="loader"
                     labelBy="name"
                     trackBy="name"
                     orderBy="name"></autocomplete>
                     
         <b>model: </b>
-        <pre>{{ selectedCars6 | json }}</pre>
+        <pre>{{ selectedRepository6 | json }}</pre>
     
-        <h4>Autocomplete with descendant ordering enabled:</h4>
-        <autocomplete [(ngModel)]="selectedCars7" 
+        <h4>Autocomplete single with descendant ordering enabled:</h4>
+        <autocomplete [(ngModel)]="selectedRepository7" 
                     [loader]="loader"
                     labelBy="name"
                     trackBy="name"
@@ -131,30 +91,30 @@ import {disableDeprecatedForms, provideForms} from "@angular/forms";
                     orderDirection="desc"></autocomplete>
                     
         <b>model: </b>
-        <pre>{{ selectedCars7 | json }}</pre>
+        <pre>{{ selectedRepository7 | json }}</pre>
     
-        <h4>Autocomplete with limit:</h4>
-        <autocomplete [(ngModel)]="selectedCars8" 
+        <h4>Autocomplete single with limit:</h4>
+        <autocomplete [(ngModel)]="selectedRepository8" 
                     [loader]="loader"
                     labelBy="name"
                     trackBy="name"
                     [limit]="2"></autocomplete>
                     
         <b>model: </b>
-        <pre>{{ selectedCars8 | json }}</pre>
+        <pre>{{ selectedRepository8 | json }}</pre>
     
-        <h4>Autocomplete with maximal allowed to selection:</h4>
-        <autocomplete [(ngModel)]="selectedCars9" 
+        <h4>Autocomplete single with maximal allowed to selection:</h4>
+        <autocomplete [(ngModel)]="selectedRepository9" 
                     [loader]="loader"
                     labelBy="name"
                     trackBy="name"
                     [maxModelSize]="2"></autocomplete>
                     
         <b>model: </b>
-        <pre>{{ selectedCars9 | json }}</pre>
+        <pre>{{ selectedRepository9 | json }}</pre>
     
-        <h4>Autocomplete with custom item constructor function:</h4>
-        <autocomplete [(ngModel)]="selectedCars10" 
+        <h4>Autocomplete single with custom item constructor function:</h4>
+        <autocomplete [(ngModel)]="selectedRepository10" 
                     [loader]="loader"
                     labelBy="name"
                     trackBy="name"
@@ -162,11 +122,11 @@ import {disableDeprecatedForms, provideForms} from "@angular/forms";
                     [itemConstructor]="itemConstructor"></autocomplete>
                     
         <b>model: </b>
-        <pre>{{ selectedCars10 | json }}</pre>
+        <pre>{{ selectedRepository10 | json }}</pre>
     
-        <h4>Autocomplete with custom template:</h4>
+        <h4>Autocomplete single with custom template:</h4>
         <autocomplete #autocomplete
-                    [(ngModel)]="selectedCars11" 
+                    [(ngModel)]="selectedRepository11" 
                     [loader]="loader"
                     labelBy="name"
                     trackBy="name"
@@ -182,7 +142,48 @@ import {disableDeprecatedForms, provideForms} from "@angular/forms";
         </autocomplete>
                     
         <b>model: </b>
-        <pre>{{ selectedCars11 | json }}</pre>
+        <pre>{{ selectedRepository11 | json }}</pre>
+    
+        <h4>Autocomplete multiple:</h4>
+        <autocomplete [(ngModel)]="selectedRepositories1" 
+                    [loader]="loader"
+                    placeholder="type to select"
+                    labelBy="name"
+                    trackBy="name"></autocomplete>
+
+        <h4>Selected items can be used to show selected items:</h4>
+        <select-items
+                  [hideControls]="true"
+                  [removeButton]="true"
+                  [items]="selectedRepositories1"
+                  labelBy="name"
+                  trackBy="name"
+                  [readonly]="true"></select-items>
+                    
+        <br/><b>model: </b>
+        <pre>{{ selectedRepositories1 | json }}</pre>
+        
+        <h4>Autocomplete multiple with persist and custom button label</h4>
+        <autocomplete [(ngModel)]="selectedRepositories2" 
+                    [loader]="loader"
+                    [persist]="true"
+                    addButtonLabel="add"
+                    labelBy="name"
+                    trackBy="name"></autocomplete>
+                    
+        <b>model: </b>
+        <pre>{{ selectedRepositories2 | json }}</pre>
+    
+        <h4>Autocomplete explicit multiple:</h4>
+        <autocomplete [(ngModel)]="allSelectedRepositories" 
+                    [loader]="loader"
+                    [persist]="true"
+                    [multiple]="true"
+                    labelBy="name"
+                    trackBy="name"></autocomplete>
+                    
+        <b>model: </b>
+        <pre>{{ allSelectedRepositories | json }}</pre>
         
 </div>
 `,
@@ -190,27 +191,26 @@ import {disableDeprecatedForms, provideForms} from "@angular/forms";
 })
 export class Sample1App {
 
-    cars: Car[] = [
-        new Car(1, "BMW", 2000),
-        new Car(2, "Mercedes", 1999),
-        new Car(3, "Opel", 2008),
-        new Car(4, "Porshe", 1940),
-        new Car(4, "Ferrari", 2000)
+    repositories: Repository[] = [
+        new Repository(1, "Angular", { name: "Google" }),
+        new Repository(2, "Typescript", { name: "Microsoft" }),
+        new Repository(3, "React", { name: "Facebook" }),
     ];
-    selectedCars1: Car[] = [];
-    selectedCars2: Car[] = [];
-    selectedCars3: Car[] = [];
-    selectedCars4: Car[] = [];
-    selectedCars5: string[] = [];
-    selectedCars6: Car[] = [];
-    selectedCars7: Car[] = [];
-    selectedCars8: Car[] = [];
-    selectedCars9: Car[] = [];
-    selectedCars10: Car[] = [];
-    selectedCars11: Car[] = [];
-    selectedCar: Car;
-    selectedCar2: Car;
-    newSelectedCar: Car = new Car(1, "BMW", 2000);
+    newSelectedRepository: Repository = new Repository(1, "Angular", { name: "Google" });;
+
+    selectedRepository1: Repository;
+    selectedRepository2: Repository;
+    selectedRepository3: Repository = new Repository(1, "Angular", { name: "Google" });;
+    selectedRepository4: Repository;
+    selectedRepository5: Repository;
+    selectedRepository6: Repository;
+    selectedRepository7: Repository;
+    selectedRepository8: Repository;
+    selectedRepository9: Repository;
+    selectedRepository10: Repository;
+    selectedRepository11: Repository;
+
+    selectedRepositories1: Repository[] = [];
     
     loader = (term: string) => {
         return this.http
@@ -219,14 +219,14 @@ export class Sample1App {
     };
 
     itemConstructor = (term: string) => {
-        return new Car(0, term, 2016);
+        return new Repository(0, term, { name: "ME" });
     };
 
     constructor(private http: Http) {
     }
 
     resetModel() {
-        this.newSelectedCar = new Car(1, "BMW", 2000);
+        this.newSelectedRepository = new Repository(1, "Angular", { name: "Google" });
     }
 
 }

@@ -648,8 +648,8 @@ export class SelectItems implements AfterViewInit {
         if (this.searchLabel !== undefined)
             return this.searchLabel;
         
-        if (this.defaultOptions && this.defaultOptions.searchLabel !== undefined)
-            return this.defaultOptions.searchLabel;
+        if (this.defaultOptions && this.defaultOptions.selectItems.searchLabel !== undefined)
+            return this.defaultOptions.selectItems.searchLabel;
         
         return "";
     }
@@ -658,8 +658,8 @@ export class SelectItems implements AfterViewInit {
         if (this.selectAllLabel !== undefined)
             return this.selectAllLabel;
         
-        if (this.defaultOptions && this.defaultOptions.selectAllLabel !== undefined)
-            return this.defaultOptions.selectAllLabel;
+        if (this.defaultOptions && this.defaultOptions.selectItems.selectAllLabel !== undefined)
+            return this.defaultOptions.selectItems.selectAllLabel;
         
         return "select all";
     }
@@ -668,8 +668,8 @@ export class SelectItems implements AfterViewInit {
         if (this.noSelectionLabel !== undefined)
             return this.noSelectionLabel;
 
-        if (this.defaultOptions && this.defaultOptions.noSelectionLabel !== undefined)
-            return this.defaultOptions.noSelectionLabel;
+        if (this.defaultOptions && this.defaultOptions.selectItems.noSelectionLabel !== undefined)
+            return this.defaultOptions.selectItems.noSelectionLabel;
 
         return "no selection";
     }

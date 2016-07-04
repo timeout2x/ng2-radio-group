@@ -3,6 +3,7 @@ import {Component} from "@angular/core";
 import {SELECT_DIRECTIVES} from "../../src/index";
 import {Car} from "./Car";
 import {HTTP_PROVIDERS, Http} from "@angular/http";
+import "rxjs/Rx";
 import {Observable} from "rxjs/Rx";
 import {provideForms, disableDeprecatedForms} from "@angular/forms";
 
