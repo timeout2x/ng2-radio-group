@@ -1,9 +1,10 @@
-import {Component, Input, Provider, ViewEncapsulation, ViewChild} from "@angular/core";
+import {Component, Input, Provider, ViewEncapsulation, ViewChild, Optional} from "@angular/core";
 import {NG_VALIDATORS, NG_VALUE_ACCESSOR} from "@angular/forms";
 import {SelectItems} from "./SelectItems";
 import {DROPDOWN_DIRECTIVES, Dropdown} from "ng2-dropdown";
 import {SelectValidator} from "./SelectValidator";
 import {SelectValueAccessor} from "./SelectValueAccessor";
+import {SelectControlsOptions} from "./SelectControlsOptions";
 
 @Component({
     selector: "select-dropdown",
@@ -293,7 +294,8 @@ export class SelectDropdown {
     // -------------------------------------------------------------------------
 
     constructor(public valueAccessor: SelectValueAccessor,
-                private validator: SelectValidator) {
+                private validator: SelectValidator,
+                @Optional() private defaultOptions: SelectControlsOptions) {
     }
 
     // -------------------------------------------------------------------------
@@ -352,6 +354,38 @@ export class SelectDropdown {
             event.stopPropagation();
         }
 
+    }
+
+    // -------------------------------------------------------------------------
+    // Private Methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Applies default options.
+     */
+    private applyOptions() {
+        const options = this.defaultOptions && this.defaultOptions.selectDropdown ? this.defaultOptions.selectDropdown : undefined;
+        if (!this.noSelectionLabel) {
+            if (options && options.noSelectionLabel !== undefined) {
+                this.noSelectionLabel = options.noSelectionLabel;
+            } else {
+                this.noSelectionLabel = "no selection";
+            }
+        }
+        if (!this.selectAllLabel) {
+            if (options && options.selectAllLabel !== undefined) {
+                this.selectAllLabel = options.selectAllLabel;
+            } else {
+                this.selectAllLabel = "select all";
+            }
+        }
+        if (!this.searchLabel) {
+            if (options && options.searchLabel !== undefined) {
+                this.searchLabel = options.searchLabel;
+            } else {
+                this.searchLabel = "";
+            }
+        }
     }
 
 }

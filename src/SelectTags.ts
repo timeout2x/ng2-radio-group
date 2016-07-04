@@ -8,7 +8,7 @@ import {
     ContentChild,
     QueryList,
     ContentChildren,
-    Directive
+    Directive, Optional
 } from "@angular/core";
 import {NG_VALIDATORS, NG_VALUE_ACCESSOR, AbstractControl} from "@angular/forms";
 import {SelectItems} from "./SelectItems";
@@ -19,6 +19,7 @@ import {SelectValidator} from "./SelectValidator";
 import {SelectValueAccessor} from "./SelectValueAccessor";
 import {Utils} from "./Utils";
 import {ItemTemplate} from "./ItemTemplate";
+import {SelectControlsOptions} from "./SelectControlsOptions";
 
 @Directive({
     selector: "select-tags-dropdown-template"
@@ -374,13 +375,13 @@ export class SelectTags implements OnInit {
     itemConstructor: ((term: string) => any);
 
     @Input()
-    nonUniqueTermLabel: string = "item with such name already exist";
+    nonUniqueTermLabel: string;
 
     @Input()
-    addButtonLabel: string = "add";
+    addButtonLabel: string;
 
     @Input()
-    addButtonSecondaryLabel: string = "(or press enter)";
+    addButtonSecondaryLabel: string;
 
     @Input()
     removeButton: boolean = true;
@@ -504,7 +505,8 @@ export class SelectTags implements OnInit {
     constructor(private widthCalculator: WidthCalculator,
                 public valueAccessor: SelectValueAccessor,
                 private validator: SelectValidator,
-                private utils: Utils) {
+                private utils: Utils,
+                @Optional() private defaultOptions: SelectControlsOptions) {
         this.valueAccessor.modelWrites.subscribe((model: any) => {
             if (model)
                 this.originalModel = true;
@@ -520,6 +522,7 @@ export class SelectTags implements OnInit {
     // -------------------------------------------------------------------------
 
     ngOnInit() {
+        this.applyOptions();
         this.initialized = true;
 
         if (this.valueAccessor.model) {
@@ -796,6 +799,48 @@ export class SelectTags implements OnInit {
             element.parentElement.insertBefore(input, element.nextSibling);
         }
         this.selectTagsBoxInput.nativeElement.focus();
+    }
+
+    /**
+     * Applies default options.
+     */
+    private applyOptions() {
+        const options = this.defaultOptions && this.defaultOptions.selectTags ? this.defaultOptions.selectTags : undefined;
+        if (!this.debounceTime) {
+            if (options && options.debounceTime !== undefined) {
+                this.debounceTime = options.debounceTime;
+            } else {
+                this.debounceTime = 500;
+            }
+        }
+        if (!this.minQueryLength) {
+            if (options && options.minQueryLength !== undefined) {
+                this.minQueryLength = options.minQueryLength;
+            } else {
+                this.minQueryLength = 2;
+            }
+        }
+        if (!this.addButtonLabel) {
+            if (options && options.addButtonLabel !== undefined) {
+                this.addButtonLabel = options.addButtonLabel;
+            } else {
+                this.addButtonLabel = "add";
+            }
+        }
+        if (!this.addButtonSecondaryLabel) {
+            if (options && options.addButtonSecondaryLabel !== undefined) {
+                this.addButtonSecondaryLabel = options.addButtonSecondaryLabel;
+            } else {
+                this.addButtonSecondaryLabel = "(or press enter)";
+            }
+        }
+        if (!this.nonUniqueTermLabel) {
+            if (options && options.nonUniqueTermLabel !== undefined) {
+                this.nonUniqueTermLabel = options.nonUniqueTermLabel;
+            } else {
+                this.nonUniqueTermLabel = "item with such name already exist";
+            }
+        }
     }
 
 }

@@ -19,5 +19,22 @@ export class SelectControlsOptions {
         noSelectionLabel?: string;
     };
 
+    selectTags: {
+        searchLabel?: string;
+        selectAllLabel?: string;
+        noSelectionLabel?: string;
+        debounceTime?: number;
+        minQueryLength?: number;
+        addButtonLabel?: string;
+        addButtonSecondaryLabel?: string;
+        nonUniqueTermLabel?: string;
+    };
+
+    selectDropdown: {
+        searchLabel?: string;
+        selectAllLabel?: string;
+        noSelectionLabel?: string;
+    };
+
 
 }

@@ -299,7 +299,7 @@ export class Autocomplete implements OnInit {
      * Defines order direction. "desc" value is used to perform descending ordering, and asc for ascending ordering.
      */
     @Input()
-    orderDirection: "asc"|"desc";
+    orderDirection: "asc"|"desc" = "asc";
 
     /**
      * Label to be shown in the "add button" area.
