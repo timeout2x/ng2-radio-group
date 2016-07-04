@@ -1,7 +1,7 @@
 import "rxjs/Rx";
 import {bootstrap} from "@angular/platform-browser-dynamic";
 import {Component} from "@angular/core";
-import {SELECT_DIRECTIVES} from "../../src/index";
+import {SELECT_CONTROL_DIRECTIVES} from "../../src/index";
 import {Car} from "./Car";
 import {ItemTemplate} from "../../src/ItemTemplate";
 import {provideForms, disableDeprecatedForms} from "@angular/forms";
@@ -428,7 +428,7 @@ import {provideForms, disableDeprecatedForms} from "@angular/forms";
     
 </div>
 `,
-    directives: [SELECT_DIRECTIVES]
+    directives: [SELECT_CONTROL_DIRECTIVES]
 })
 export class Sample1App {
 

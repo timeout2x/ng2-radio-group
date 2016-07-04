@@ -22,7 +22,7 @@ import {SelectDropdown} from "./SelectDropdown";
 import {SelectTags, SelectTagsDropdownTemplate, SelectTagsBoxTemplate} from "./SelectTags";
 import {ItemTemplate} from "./ItemTemplate";
 
-export const SELECT_DIRECTIVES: [any] = [
+export const SELECT_CONTROL_DIRECTIVES: [any] = [
     CheckboxGroup,
     CheckboxItem,
     RadioGroup,

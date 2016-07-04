@@ -62,7 +62,7 @@ import {SelectControlsOptions} from "./SelectControlsOptions";
                         [readonly]="readonly"
                         [disabled]="isItemDisabled(item)">
                         <span [class.hidden]="!getItemTemplates() || !getItemTemplates().length" [itemTemplateTransclude]="getItemTemplates()" [item]="item"></span>
-                        <span [class.hidden]="getItemTemplates() && getItemTemplates().length" class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="(getItemTemplates() && getItemTemplates().length) || last" class="separator"></span>
+                        <span [class.hidden]="getItemTemplates() && getItemTemplates().length" class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="(getItemTemplates() && getItemTemplates().length) || last" class="select-items-separator"></span>
                     </checkbox-item>
                     <span class="remove-button" 
                           [class.hidden]="!removeButton" (click)="removeItem(item)">×</span>
@@ -99,7 +99,7 @@ import {SelectControlsOptions} from "./SelectControlsOptions";
                         [readonly]="readonly"
                         [disabled]="isItemDisabled(item)">
                         <span [class.hidden]="!getItemTemplates() || !getItemTemplates().length" [itemTemplateTransclude]="getItemTemplates()" [item]="item"></span>
-                        <span [class.hidden]="getItemTemplates() && getItemTemplates().length"  class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="(getItemTemplates() && getItemTemplates().length) || last" class="separator"></span>
+                        <span [class.hidden]="getItemTemplates() && getItemTemplates().length"  class="select-items-label">{{ getItemLabel(item) }}</span><span [class.hidden]="(getItemTemplates() && getItemTemplates().length) || last" class="select-items-separator"></span>
                     </radio-item>
                     <span class="remove-button" [class.hidden]="!removeButton" (click)="removeItem(item)">×</span>
                 </div>

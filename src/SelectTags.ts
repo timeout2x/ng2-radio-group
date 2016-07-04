@@ -508,11 +508,13 @@ export class SelectTags implements OnInit {
                 private utils: Utils,
                 @Optional() private defaultOptions: SelectControlsOptions) {
         this.valueAccessor.modelWrites.subscribe((model: any) => {
-            if (model)
+            if (model) {
                 this.originalModel = true;
-            if (this.initialized) {
-                this.cursorPosition = model.length;
-                this.recalculateInputWidth(undefined, this.term);
+
+                if (this.initialized) {
+                    this.cursorPosition = model.length;
+                    this.recalculateInputWidth(undefined, this.term);
+                }
             }
         });
     }
@@ -574,6 +576,7 @@ export class SelectTags implements OnInit {
      * On model change outside.
      */
     onModelChange(model: any[]) {
+        if (!model) return;
         this.cursorPosition = model.length;
         this.valueAccessor.set(model);
         this.lastLoadTerm = "";
@@ -585,6 +588,7 @@ export class SelectTags implements OnInit {
     }
 
     onItemsChange(model: any[]) {
+        if (!model) return;
         this.cursorPosition = model.length;
         this.valueAccessor.set(model);
     }

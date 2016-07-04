@@ -131,10 +131,10 @@ import {SelectControlsOptions} from "./SelectControlsOptions";
 .select-dropdown .select-dropdown-box .select-items .select-items-label {
     padding-right: 0;
 }
-.select-dropdown .select-dropdown-box .select-items .select-items-item .separator {
+.select-dropdown .select-dropdown-box .select-items .select-items-item .select-items-separator {
     padding-right: 2px;
 }
-.select-dropdown .select-dropdown-box .select-items .select-items-item .separator:before {
+.select-dropdown .select-dropdown-box .select-items .select-items-item .select-items-separator:before {
     content: ",";
 }
 .select-dropdown .select-dropdown-dropdown-menu .select-items .no-selection,
