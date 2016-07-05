@@ -21,9 +21,9 @@ export class SelectValidator implements Validator {
         if (!this.options) return null;
         
         const errors: any = {};
-        if (this.options.required && (!c.value || (c.value instanceof Array) && c.value.length === 0))
+        if (this.options.required && (!c.value || (c.value instanceof Array && c.value.length === 0)))
             errors.required = true;
-        if (this.options.minModelSize && (!c.value || (c.value instanceof Array) && c.value.length < this.options.minModelSize))
+        if (this.options.minModelSize && (!c.value || (c.value instanceof Array && c.value.length < this.options.minModelSize)))
             errors.minModelSize = true;
         
         return Object.keys(errors).length > 0 ? errors : null;

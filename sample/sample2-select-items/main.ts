@@ -236,6 +236,23 @@ import {provideForms, disableDeprecatedForms} from "@angular/forms";
     <h4>model: </h4>
     <pre>{{ selectedCars18 | json }}</pre>
     
+    <h4>Using with forms and required:</h4>
+    <form>
+        <select-items  #selectedCarsInput="ngModel"
+                      name="selectedCars"
+                      [(ngModel)]="selectedCars19"
+                      [items]="cars"
+                      [required]="true"
+                      labelBy="name">
+        </select-items>
+    </form>
+    <div [hidden]="selectedCarsInput.valid || selectedCarsInput.pristine" class="alert alert-danger">
+        This field is required
+    </div>
+
+    <h4>model: </h4>
+    <pre>{{ selectedCars19 | json }}</pre>
+    
     <!-- SAME WITH RADIO -->
     
     <hr>

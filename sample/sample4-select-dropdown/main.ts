@@ -181,6 +181,23 @@ import {disableDeprecatedForms, provideForms} from "@angular/forms";
 
         <br/><b>model: </b>
         <pre>{{ newSelectedCar | json }}</pre>
+        
+        <h4>Autocomplete with forms and required:</h4>
+        <form>
+            <select-dropdown #selectedCarInput="ngModel"
+                        name="selectedCar"
+                        [(ngModel)]="selectedCars12" 
+                        [items]="cars"
+                        labelBy="name"
+                        trackBy="name"
+                        [required]="true"></select-dropdown>
+        </form>
+        <div [hidden]="selectedCarInput.valid || selectedCarInput.pristine" class="alert alert-danger">
+            This field is required
+        </div>
+    
+        <h4>model: </h4>
+        <pre>{{ selectedCars12 | json }}</pre>
     
         <h4>Select Dropdown readonly with custom readonly label:</h4>
         <select-dropdown [(ngModel)]="notSelectedCar" 

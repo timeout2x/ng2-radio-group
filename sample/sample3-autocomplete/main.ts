@@ -143,6 +143,24 @@ import {disableDeprecatedForms, provideForms} from "@angular/forms";
                     
         <b>model: </b>
         <pre>{{ selectedRepository11 | json }}</pre>
+        
+        <h4>Autocomplete single with forms and required:</h4>
+        <form>
+        <autocomplete #selectedRepositoryAutocomplete="ngModel"
+                    name="selectedRepository"
+                    [(ngModel)]="selectedRepository12" 
+                    [loader]="loader"
+                    labelBy="name"
+                    trackBy="name"
+                    [persist]="true"
+                    [required]="true"></autocomplete>
+        </form>
+        <div [hidden]="selectedRepositoryAutocomplete.valid || selectedRepositoryAutocomplete.pristine" class="alert alert-danger">
+            This field is required
+        </div>
+    
+        <h4>model: </h4>
+        <pre>{{ selectedRepository12 | json }}</pre>
     
         <h4>Autocomplete multiple:</h4>
         <autocomplete [(ngModel)]="selectedRepositories1" 
@@ -209,6 +227,7 @@ export class Sample1App {
     selectedRepository9: Repository;
     selectedRepository10: Repository;
     selectedRepository11: Repository;
+    selectedRepository12: Repository;
 
     selectedRepositories1: Repository[] = [];
     

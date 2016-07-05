@@ -19,18 +19,19 @@ import {SelectControlsOptions} from "./SelectControlsOptions";
                 </span>
                 <select-items #listSelectItems
                       [hideControls]="true"
-                      [items]="model"
+                      [items]="valueAccessor.model"
                       [labelBy]="valueBy ? listLabelBy : (listLabelBy || labelBy)"
                       [trackBy]="valueBy ? listTrackBy : (listTrackBy || trackBy)"
                       [disabled]="disabled"
+                      [required]="required"
                       [readonly]="true"></select-items>
             </div>
             <div *ngIf="!isMultiple()">
-                <span [class.hidden]="model">
+                <span [class.hidden]="valueAccessor.model">
                     <span class="no-selection" [class.readonly]="readonly" [class.disabled]="disabled">{{ readonly ? (readonlyLabel || label) : label }}</span>
                 </span>
-                <span [class.hidden]="!model">
-                    <span class="single-selected" [class.readonly]="readonly" [class.disabled]="disabled">{{ getItemLabel(model) }}</span>
+                <span [class.hidden]="!valueAccessor.model">
+                    <span class="single-selected" [class.readonly]="readonly" [class.disabled]="disabled">{{ getItemLabel(valueAccessor.model) }}</span>
                 </span>
             </div>
             <div style="clear: left"></div>
@@ -39,8 +40,8 @@ import {SelectControlsOptions} from "./SelectControlsOptions";
             <div class="select-dropdown-dropdown-menu dropdown-menu"
                 [class.hidden]="readonly || disabled || (!dropdownSelectItems.getItems().length && !searchBy)">
                 <select-items #dropdownSelectItems
-                    [(ngModel)]="model" 
-                    (ngModelChange)="onModelChange()" 
+                    [(ngModel)]="valueAccessor.model" 
+                    (ngModelChange)="onModelChange($event)" 
                     [items]="items"
                     [multiple]="isMultiple()"
                     [limit]="limit"
@@ -325,7 +326,8 @@ export class SelectDropdown {
         return item;
     }
 
-    onModelChange() {
+    onModelChange(model: any) {
+        this.valueAccessor.set(model);
         if (!this.isMultiple()) {
             this.dropdown.close();
         }

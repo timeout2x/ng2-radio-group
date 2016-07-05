@@ -217,6 +217,24 @@ import {provideForms, disableDeprecatedForms} from "@angular/forms";
     <br/><b>model: </b>
     <pre>{{ selectedCars16 | json }}</pre>
     
+    <h4>Select tags with forms and required:</h4>
+    <form>
+        <select-tags #selectedCarInput="ngModel"
+                    name="selectedCar" 
+                    [(ngModel)]="selectedCars17"
+                    [persist]="true"
+                    [required]="true"
+                    [loader]="loader"
+                    labelBy="name"
+                    trackBy="name"></select-tags>
+    </form>
+    <div [hidden]="selectedCarInput.valid || selectedCarInput.pristine" class="alert alert-danger">
+        This field is required
+    </div>
+
+    <h4>model: </h4>
+    <pre>{{ selectedCars17 | json }}</pre>
+    
 </div>
 `,
     directives: [SELECT_CONTROL_DIRECTIVES]
@@ -255,6 +273,7 @@ export class Sample1App {
         this.cars[2]
     ];
     selectedCars16: Car[] = [];
+    selectedCars17: Car[] = [];
 
     loader = (term: string) => {
         return this.http
