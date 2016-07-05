@@ -28,6 +28,7 @@ export class SelectControlsOptions {
         addButtonLabel?: string;
         addButtonSecondaryLabel?: string;
         nonUniqueTermLabel?: string;
+        maxModelSizeLabel?: string;
     };
 
     selectDropdown: {

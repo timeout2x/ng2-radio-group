@@ -89,6 +89,9 @@ export class SelectTagsBoxTemplate {
         <div class="select-tags-add-button" [class.hidden]="!persist || !term || !term.length">
             <a (click)="addTerm()">{{ addButtonLabel }}</a> {{ addButtonSecondaryLabel }}
         </div>
+        <div class="select-tags-max-model-size-label" [class.hidden]="!maxModelSizeLabel || !maxModelSize || valueAccessor.model?.length < maxModelSize">
+            {{ maxModelSizeLabel }}
+        </div>
         <div class="select-tags-dropdown-menu dropdown-menu"
             [class.hidden]="!dropdownSelectItems.getItems().length">
             <select-items #dropdownSelectItems
@@ -121,6 +124,12 @@ export class SelectTagsBoxTemplate {
     display: none !important;
 }
 .select-tags-add-button {
+    margin-top: 2px;
+    float: right;
+    font-size: 0.75em;
+    color: #999;
+}
+.select-tags-max-model-size-label {
     margin-top: 2px;
     float: right;
     font-size: 0.75em;
@@ -394,6 +403,9 @@ export class SelectTags implements OnInit {
 
     @Input()
     selectAllLabel: string;
+
+    @Input()
+    maxModelSizeLabel: string;
 
     /**
      * Additional filter to filter items displayed in the dropdown.
@@ -843,6 +855,13 @@ export class SelectTags implements OnInit {
                 this.nonUniqueTermLabel = options.nonUniqueTermLabel;
             } else {
                 this.nonUniqueTermLabel = "item with such name already exist";
+            }
+        }
+        if (!this.maxModelSizeLabel) {
+            if (options && options.maxModelSizeLabel !== undefined) {
+                this.maxModelSizeLabel = options.maxModelSizeLabel;
+            } else {
+                this.maxModelSizeLabel = "maximal number of tags selected";
             }
         }
     }
