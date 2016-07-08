@@ -31,7 +31,7 @@ export class RadioGroup {
     // -------------------------------------------------------------------------
 
     @Input()
-    set trackBy(trackBy: string|((item: any) => string)) {
+    set trackBy(trackBy: string|((item1: any, item2: any) => boolean)) {
         this.valueAccessor.trackBy = trackBy;
     }
 

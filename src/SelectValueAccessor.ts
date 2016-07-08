@@ -9,7 +9,7 @@ export class SelectValueAccessor implements ControlValueAccessor {
     // -------------------------------------------------------------------------
 
     modelWrites = new EventEmitter<any>();
-    trackBy: string|((item: any) => string);
+    trackBy: string|((item1: any, item2: any) => boolean);
     valueBy: string|((item: any) => string);
 
     // -------------------------------------------------------------------------
@@ -69,7 +69,11 @@ export class SelectValueAccessor implements ControlValueAccessor {
         // value = this.extractModelValue(value);
         if (this.trackBy) {
             const item = this._model.find((i: any) => {
-                return this.extractValue(i, this.trackBy) === this.extractValue(value, this.trackBy);
+                if (this.trackBy instanceof Function) {
+                    return (this.trackBy as ((item1: any, item2: any) => boolean))(i, value);
+                } else {
+                    return i[this.trackBy as string] === value[this.trackBy as string];
+                }
             });
             this.removeAt(this._model.indexOf(item));
         } else {
@@ -117,7 +121,11 @@ export class SelectValueAccessor implements ControlValueAccessor {
         if (this._model instanceof Array) {
             if (this.trackBy) {
                 return !!this._model.find((i: any) => {
-                    return this.extractValue(i, this.trackBy) === this.extractValue(value, this.trackBy);
+                    if (this.trackBy instanceof Function) {
+                        return (this.trackBy as ((item1: any, item2: any) => boolean))(i, value);
+                    } else {
+                        return i[this.trackBy as string] === value[this.trackBy as string];
+                    }
                 });
             } else {
                 return !!this._model.find((i: any) => {
@@ -127,7 +135,11 @@ export class SelectValueAccessor implements ControlValueAccessor {
 
         } else if (this._model !== null && this._model !== undefined) {
             if (this.trackBy) {
-                return this.extractValue(this._model, this.trackBy) === this.extractValue(value, this.trackBy);
+                if (this.trackBy instanceof Function) {
+                    return (this.trackBy as ((item1: any, item2: any) => boolean))(this._model, value);
+                } else {
+                    return this._model[this.trackBy as string] === value[this.trackBy as string];
+                }
             } else {
                 return this._model === value;
             }
